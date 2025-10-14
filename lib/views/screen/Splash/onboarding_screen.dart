@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:map_my_taste/helpers/route.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/utils/app_images.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
@@ -27,6 +28,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       duration: Duration(milliseconds: 300),
       curve: Curves.easeIn,
     );
+    if(_currentPage == 3){
+      Get.toNamed(AppRoutes.signInScreen);
+    }
   }
 
   void _onPageChanged(int index) {
