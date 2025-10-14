@@ -1,4 +1,3 @@
-/*
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,6 +10,7 @@ class CustomTextField extends StatefulWidget {
   final bool? isObscureText;
   final String? obscureCharacrter;
   final Color? filColor;
+  final Color? borderColor;
   final int? maxLines;
   final Widget? prefixIcon;
   final String? labelText;
@@ -38,6 +38,7 @@ class CustomTextField extends StatefulWidget {
     this.isObscureText = false,
     this.obscureCharacrter = '*',
     this.filColor,
+    this.borderColor,
     this.maxLines = 1,
     this.labelText,
     this.isPassword = false,
@@ -68,7 +69,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
       keyboardType: widget.keyboardType,
       obscuringCharacter: widget.obscureCharacrter!,
       validator: widget.validator,
-      */
 /*validator: widget.validator ??
               (value) {
             if (widget.isEmail == null) {
@@ -91,11 +91,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
               }
             }
             return null;
-          },*//*
+          },*/
 
       cursorColor: AppColors.primaryColor,
       obscureText: widget.isPassword ? obscureText : false,
-      style: const TextStyle(color: Colors.black),
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         contentPadding: EdgeInsets.symmetric(
             horizontal: widget.contenpaddingHorizontal ?? 12.w,
@@ -122,7 +122,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         prefixIconColor: AppColors.greyColor,
         labelText: widget.labelText,
         hintText: widget.hintText,
-        hintStyle: TextStyle(color: AppColors.hintColor, fontFamily: 'Poppins'),
+        hintStyle: TextStyle(color: AppColors.hintColor, fontFamily: 'Arial'),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(
@@ -131,7 +131,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         ),
         errorBorder: _buildOutlineInputBorder(),
-        focusedBorder: _buildOutlineInputBorder(),
+        focusedBorder: _buildFocusedBorder(),
         enabledBorder: _buildOutlineInputBorder(),
         disabledBorder: _buildOutlineInputBorder(),
       ),
@@ -150,12 +150,20 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   _buildOutlineInputBorder() {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(16.r),
       borderSide: BorderSide(
         width: 1.w,
-        color: AppColors.primaryColor,
+        color: widget.borderColor ?? AppColors.fillColor,
+      ),
+    );
+  }
+  _buildFocusedBorder() {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16.r),
+      borderSide: BorderSide(
+        width: 1.w,
+        color: widget.borderColor ?? AppColors.primaryColor,
       ),
     );
   }
 }
-*/

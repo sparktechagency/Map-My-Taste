@@ -16,7 +16,7 @@ class AppColors{
   static Color whiteColor = const Color(0xFFFFFFFF);
   static Color hintColor = const Color(0xFFB5B5B5);
   static Color greyColor = const Color(0xFF848484);
-  static Color fillColor = const Color(0xFF1E1E1E).withOpacity(0.3);
+  static Color fillColor = const Color(0xFF272727);
   static Color dividerColor = const Color(0xFF555555);
   static Color shadowColor = const Color(0xFF2B2A2A);
   static Color bottomBarColor = const Color(0xFF343434);
