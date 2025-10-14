@@ -121,6 +121,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         suffixIconColor: AppColors.greyColor,
         prefixIconColor: AppColors.greyColor,
         labelText: widget.labelText,
+        labelStyle: TextStyle(color: Colors.grey),
         hintText: widget.hintText,
         hintStyle: TextStyle(color: AppColors.hintColor, fontFamily: 'Arial'),
         border: OutlineInputBorder(

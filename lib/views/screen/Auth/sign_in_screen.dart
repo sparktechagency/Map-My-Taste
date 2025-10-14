@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:map_my_taste/helpers/route.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/utils/app_icons.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
@@ -25,13 +26,13 @@ class SignInScreen extends StatelessWidget {
             children: [
               SizedBox(height: 44.h),
               CustomText(
-                text: AppStrings.welcomeBack,
+                text: AppStrings.welcomeBack.tr,
                 fontWeight: FontWeight.w700,
                 fontSize: 24.sp,
                 bottom: 16.h,
               ),
               CustomText(
-                text: AppStrings.pleaseLogIn,
+                text: AppStrings.pleaseLogIn.tr,
                 maxLine: 5,
                 textAlign: TextAlign.start,
                 color: AppColors.greyColor,
@@ -40,13 +41,13 @@ class SignInScreen extends StatelessWidget {
               //============================> Email Controller <===================================
               CustomTextField(
                 controller: emailCTRL,
-                hintText: AppStrings.email.tr,
+                labelText: AppStrings.email.tr,
               ),
               SizedBox(height: 16.h),
               //============================> Password Controller <===================================
               CustomTextField(
                 controller: passCTRL,
-                hintText: AppStrings.password.tr,
+                labelText: AppStrings.password.tr,
               ),
               SizedBox(height: 16.h),
               //============================> Forgot Password Button <===================================
@@ -89,7 +90,7 @@ class SignInScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: EdgeInsets.all(16.w),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -115,7 +116,9 @@ class SignInScreen extends StatelessWidget {
                     right: 6.w,
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Get.toNamed(AppRoutes.signUpScreen);
+                    },
                     child: CustomText(
                       text: AppStrings.register.tr,
                       color: AppColors.primaryColor,

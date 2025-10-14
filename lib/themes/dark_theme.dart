@@ -36,7 +36,7 @@ ThemeData dark({Color color = const Color(0xFF2683EB)}) => ThemeData(
               fontSize: 18.sp,
               fontFamily: 'Arial',
               color: AppColors.whiteColor),
-          iconTheme: IconThemeData(color: AppColors.borderColor)),
+          iconTheme: IconThemeData(color: AppColors.whiteColor)),
       textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(foregroundColor: color)),
       colorScheme: ColorScheme.dark(primary: color, secondary: color)
