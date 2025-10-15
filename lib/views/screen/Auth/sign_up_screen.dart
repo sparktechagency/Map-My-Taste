@@ -63,10 +63,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 labelText: AppStrings.fullName.tr,
               ),
               SizedBox(height: 16.h),
+              //============================> Email Controller <===================================
+              CustomTextField(
+                controller: signUpEmailCTRL,
+                labelText: AppStrings.email.tr,
+              ),
+              SizedBox(height: 16.h),
               //============================> Phone Number Controller <===================================
               CustomTextField(
                 controller: signUpPhoneNumberCTRL,
-                labelText: AppStrings.password.tr,
+                labelText: AppStrings.phoneNumber.tr,
               ),
               SizedBox(height: 16.h),
               //============================> Address Controller <===================================

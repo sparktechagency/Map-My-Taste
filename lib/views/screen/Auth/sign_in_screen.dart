@@ -54,7 +54,7 @@ class SignInScreen extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {Get.toNamed(AppRoutes.forgotPasswordScreen);},
                   child: CustomText(
                     text: AppStrings.forgotPassword,
                     fontSize: 16.sp,
