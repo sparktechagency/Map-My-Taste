@@ -36,6 +36,7 @@ class AppStrings {
   static String loginWithApple = 'Login With Apple';
   static String loginWithGoogle = 'Login With Google';
   static String haveNotRegisterYet = 'Haven’t register yet?';
+  static String alreadyHaveAnAccount = 'Already have an account.';
   static String register = 'Register';
   static String createYourAccount = 'Create Your Account';
   static String letGetYouSetUp = 'Let’s get you set up! Create an account to start tracking places, writing reviews, and saving your favorite spots.';
