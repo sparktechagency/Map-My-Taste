@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:map_my_taste/helpers/route.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_strings.dart';
 import '../../base/custom_app_bar.dart';
@@ -9,9 +8,10 @@ import '../../base/custom_button.dart';
 import '../../base/custom_text.dart';
 import '../../base/custom_text_field.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
-   ForgotPasswordScreen({super.key});
-  final TextEditingController forgotEmailCTRL = TextEditingController();
+class ResetPasswordScreen extends StatelessWidget {
+  ResetPasswordScreen({super.key});
+  final TextEditingController newPassCTRL = TextEditingController();
+  final TextEditingController retypePassCTRL = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -24,32 +24,37 @@ class ForgotPasswordScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomText(
-                text: AppStrings.addEmailAddress.tr,
+                text: AppStrings.confirmYourNumber.tr,
                 fontWeight: FontWeight.w700,
                 fontSize: 24.sp,
                 bottom: 16.h,
               ),
               CustomText(
-                text: AppStrings.weWillSendAnOTP.tr,
+                text: AppStrings.yourPasswordMust.tr,
                 maxLine: 5,
                 textAlign: TextAlign.start,
                 color: AppColors.greyColor,
                 bottom: 16.h,
               ),
-              //============================> Email Controller <===================================
+              //============================> New Password Controller <===================================
               CustomTextField(
-                controller: forgotEmailCTRL,
-                labelText: AppStrings.emailAddress.tr,
+                controller: newPassCTRL,
+                labelText: AppStrings.newPassword.tr,
               ),
-              SizedBox(height: 301.h),
-              //============================> Register Button <===================================
-              CustomButton(onTap: () {Get.toNamed(AppRoutes.otpScreen);}, text: AppStrings.sendMeTheCode.tr),
-              SizedBox(height: 24.h)
+              SizedBox(height: 16.h),
+              //============================> Retype New Password Controller <===================================
+              CustomTextField(
+                controller: retypePassCTRL,
+                labelText: AppStrings.retypeNewPassword.tr,
+              ),
+              SizedBox(height: 209.h),
+              //============================> Confirm Button <===================================
+              CustomButton(onTap: () {}, text: AppStrings.confirm),
+              SizedBox(height: 24.h),
             ],
           ),
         ),
       ),
-
     );
   }
 }
