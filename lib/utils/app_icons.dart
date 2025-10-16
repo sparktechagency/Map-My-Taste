@@ -23,5 +23,12 @@ class AppIcons{
   static String navLove ="$baseUrl/navLove.svg";
   static String search ="$baseUrl/search.svg";
   static String explore ="$baseUrl/explore.svg";
+  static String editProfile ="$baseUrl/editProfile.svg";
+  static String lock ="$baseUrl/lock.svg";
+  static String shareProfile ="$baseUrl/shareProfile.svg";
+  static String notification ="$baseUrl/notification.svg";
+  static String report ="$baseUrl/report.svg";
+  static String terms ="$baseUrl/terms.svg";
+  static String signOut ="$baseUrl/signOut.svg";
 
 }

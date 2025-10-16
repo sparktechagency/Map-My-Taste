@@ -1,4 +1,3 @@
-/*
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../utils/app_colors.dart';
@@ -29,9 +28,7 @@ class CustomListTile extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.r),
-              color: Color(0xfffffbe6),
-              border: Border.all(
-                  width: 1.w, color: borderColor ?? AppColors.borderColor)),
+              color: AppColors.backgroundColor),
           child: ListTile(
             leading: prefixIcon,
             trailing: suffixIcon,
@@ -50,4 +47,3 @@ class CustomListTile extends StatelessWidget {
     );
   }
 }
-*/

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:map_my_taste/utils/app_icons.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
 import 'package:map_my_taste/views/base/custom_network_image.dart';
+import 'package:map_my_taste/views/screen/Profile/InnerWidget/drawer_section.dart';
 import '../../../controllers/profile_controller.dart';
 import '../../../helpers/route.dart';
 import '../../../utils/app_colors.dart';
@@ -21,11 +22,13 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  //final ProfileController _controller = Get.put(ProfileController());
+  final ProfileController _controller = Get.put(ProfileController());
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+     endDrawer: DrawerSection(),
       bottomNavigationBar: BottomMenu(4),
       appBar: AppBar(
         backgroundColor: Color(0xFF1E1E1E),
@@ -44,9 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w700,
               ),
-              InkWell(
-                onTap: (){},
-                  child: SvgPicture.asset(AppIcons.settings)),
+             /* InkWell(
+                onTap: (){ _controller.scaffoldKey.currentState!.openEndDrawer();},
+                  child: SvgPicture.asset(AppIcons.settings)),*/
             ],
           ),
         ),
