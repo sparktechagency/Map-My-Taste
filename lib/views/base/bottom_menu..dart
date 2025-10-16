@@ -1,80 +1,103 @@
-/*
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:project_template/helpers/route.dart';
-import 'package:project_template/utils/app_icons.dart';
-import '../../utils/app_colors.dart';
+import '../../../../../helpers/route.dart';
+import '../../../../../utils/app_colors.dart';
+import '../../../../../utils/app_icons.dart';
 
 class BottomMenu extends StatelessWidget {
   final int menuIndex;
 
   const BottomMenu(this.menuIndex, {super.key});
 
-  Color colorByIndex(ThemeData theme, int index) {
-    return index == menuIndex ? Colors.white : theme.disabledColor;
-  }
-
-  BottomNavigationBarItem getItem(
-      String image, String title, ThemeData theme, int index) {
-    return BottomNavigationBarItem(
-        label: title,
-        icon: Padding(
-          padding: const EdgeInsets.only(top:8),
-          child: SvgPicture.asset(
-            image,
-            height: 24.0,
-            width: 24.0,
-            color: colorByIndex(theme, index),
-          ),
-        ));
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    List<BottomNavigationBarItem> menuItems = [
-      getItem(menuIndex ==0 ? AppIcons.homeOut: AppIcons.home, 'Home', theme, 0),
-      getItem( menuIndex ==1 ? AppIcons.categoriFill :  AppIcons.categories, 'Categories', theme, 1),
-      getItem(menuIndex ==2 ? AppIcons.profileOutline: AppIcons.profile, 'Profile', theme, 2),
+    final items = [
+      {
+        "icon": AppIcons.home ?? 'assets/icons/default_home.svg',
+        "route": AppRoutes.profileScreen,
+      },
+      {
+        "icon": AppIcons.search ?? 'assets/icons/default_home.svg',
+        "route": AppRoutes.profileScreen,
+      },
+      {
+        "icon": AppIcons.love ?? 'assets/icons/default_home.svg',
+        "route": AppRoutes.profileScreen,
+      },
+      {
+        "icon": AppIcons.explore ?? 'assets/icons/default_home.svg',
+        "route": AppRoutes.profileScreen,
+      },
+      {
+        "icon": AppIcons.profile ?? 'assets/icons/default_profile.svg',
+        "route": AppRoutes.profileScreen,
+      },
     ];
 
     return Container(
-
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      margin: EdgeInsets.only(left:  16.w, right: 16.w, bottom: 24.h),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topRight: Radius.circular(20.r),topLeft: Radius.circular(20.r)
-          ),
-          boxShadow: const [
-            BoxShadow(color:Colors.black38,spreadRadius:0,blurRadius: 10)
-          ]
+        color: AppColors.secondaryGreyColor,
+        borderRadius: BorderRadius.circular(26.r),
+        border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-            topRight: Radius.circular(20.r),topLeft: Radius.circular(20.r)
-
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.primaryColor,
-          currentIndex: menuIndex,
-          onTap: (value) {
-            switch (value) {
-              case 0:
-                Get.offAndToNamed(AppRoutes.homeScreen);
-                break;
-              case 1:
-                Get.offAndToNamed(AppRoutes.categoriesScreen);
-                break;
-              case 2:
-                Get.offAndToNamed(AppRoutes.profileScreen);
-                break;
-            }
-          },
-          items: menuItems,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(items.length, (index) {
+          final isSelected = index == menuIndex;
+          final item = items[index];
+          return GestureDetector(
+            onTap: () => Get.offAndToNamed(item["route"] as String),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Active item has a rounded container and shadow
+                if (isSelected)
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.3),
+                     border: Border.all(width: 1.w, color: AppColors.primaryColor),
+                     borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SvgPicture.asset(
+                          item["icon"]!,
+                          height: 28.w,
+                          width: 28.w,
+                        ),
+                        SizedBox(height: 4.h),
+                      ],
+                    ),
+                  ),
+                // Inactive item just displays the icon and label
+                if (!isSelected)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        item["icon"]!,
+                        height: 24.w,
+                        width: 24.w,
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
-}*/
+}

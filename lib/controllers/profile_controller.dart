@@ -1,4 +1,3 @@
-/*
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,15 +24,11 @@ class ProfileController extends GetxController {
   }
 
   //===============================> Edit Profile Screen <=============================
-  final TextEditingController firstNameCTRL = TextEditingController();
-  final TextEditingController sureNameCTRL = TextEditingController();
+  final TextEditingController fullNameCTRL = TextEditingController();
   final TextEditingController phoneCTRL = TextEditingController();
   final TextEditingController addressCTRL = TextEditingController();
-  final TextEditingController locationCTRL = TextEditingController();
+  final TextEditingController genderCTRL = TextEditingController();
   final TextEditingController dateBirthCTRL = TextEditingController();
-  final TextEditingController businessCTRL = TextEditingController();
-  final TextEditingController workCTRL = TextEditingController();
-  final TextEditingController experienceCTRL = TextEditingController();
 
   //===============================> Image Picker <=============================
   Future pickImage(ImageSource source) async {
@@ -73,4 +68,3 @@ class ProfileController extends GetxController {
     }
   }
 }
-*/
