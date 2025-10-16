@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         return GetBuilder<LocalizationController>(
           builder: (localizeController) {
             return ScreenUtilInit(
-              designSize: const Size(393, 852),
+              designSize: const Size(440, 956),
               minTextAdapt: true,
               splitScreenMode: true,
               builder: (_, child) {
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
                   ),
                   transitionDuration: const Duration(milliseconds: 500),
                   getPages: AppRoutes.page,
-                  initialRoute: AppRoutes.changePasswordScreen,
+                  initialRoute: AppRoutes.profileScreen,
                 );
               },
             );

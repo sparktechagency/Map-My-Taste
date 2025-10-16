@@ -15,5 +15,13 @@ class AppIcons{
   static String personalIcon="$baseUrl/parsong_icon-card.svg";
   static String calenderIcon="$baseUrl/calender-card.svg";
   static String google="$baseUrl/google.svg";
+  static String settings="$baseUrl/settings.svg";
+  static String location="$baseUrl/location.svg";
+  static String love ="$baseUrl/love.svg";
+  static String star ="$baseUrl/star.svg";
+  static String edit ="$baseUrl/edit.svg";
+  static String navLove ="$baseUrl/navLove.svg";
+  static String search ="$baseUrl/search.svg";
+  static String explore ="$baseUrl/explore.svg";
 
 }

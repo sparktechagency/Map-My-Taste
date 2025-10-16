@@ -109,7 +109,7 @@ class AppStrings {
   static String shareProfile = 'Share Profile';
   static String preferences = 'Preferences';
   static String helpSupport = 'Help & Support';
-  static String reportProblem = 'Report a problem';
+  static String reportProblem = 'Report A Problem';
   static String termsPolicies = 'Terms & Policies';
   static String signOut = 'Sign Out';
   static String save = 'Save';

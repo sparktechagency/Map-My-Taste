@@ -25,7 +25,7 @@ ThemeData dark({Color color = const Color(0xFF2683EB)}) => ThemeData(
           focusedBorder: focusedBorder(),
           errorBorder: errorBorder()),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.bottomBarColor,
+        backgroundColor: Colors.transparent,
         selectedLabelStyle: TextStyle(color: color),
         unselectedLabelStyle: TextStyle(color: AppColors.subTextColor),
       ),

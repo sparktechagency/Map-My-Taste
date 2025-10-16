@@ -20,7 +20,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
           child: const Icon(Icons.arrow_back_ios)),
       title:
-          CustomText(text: title, fontSize: 16.sp, fontWeight: FontWeight.bold),
+          CustomText(text: title, fontSize: 22.sp, fontWeight: FontWeight.w700),
     );
   }
 
