@@ -5,6 +5,7 @@ import '../views/screen/Auth/otp_screen.dart';
 import '../views/screen/Auth/reset_password_screen.dart';
 import '../views/screen/Auth/sign_in_screen.dart';
 import '../views/screen/Auth/sign_up_screen.dart';
+import '../views/screen/Home/home_screen.dart';
 import '../views/screen/Location/location_picker_screen.dart';
 import '../views/screen/Location/location_screen.dart';
 import '../views/screen/Profile/edit_profile_screen.dart';
@@ -43,7 +44,7 @@ class AppRoutes{
     GetPage(name:otpScreen, page: ()=> OtpScreen()),
     GetPage(name:reportProblemScreen, page: ()=> ReportProblemScreen()),
     GetPage(name:termsPoliciesScreen, page: ()=> TermsPoliciesScreen()),
-  //  GetPage(name:homeScreen, page: ()=>const HomeScreen(),transition:Transition.noTransition),
+    GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
   //  GetPage(name:categoriesScreen, page: ()=>const CategoriesScreen(),transition:Transition.noTransition),
     GetPage(name:profileScreen, page: ()=>const ProfileScreen(),transition: Transition.noTransition),
     GetPage(name:editProfileScreen, page: ()=>const EditProfileScreen()),

@@ -11,5 +11,6 @@ class AppImages{
   static String onboard2="$baseUrl/onboard2.png";
   static String onboard3="$baseUrl/onboard3.png";
   static String onboard4="$baseUrl/onboard4.png";
+  static String logo="$baseUrl/logo.png";
 
 }
