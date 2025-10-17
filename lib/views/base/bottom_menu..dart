@@ -16,7 +16,7 @@ class BottomMenu extends StatelessWidget {
     final items = [
       {
         "icon": AppIcons.home ?? 'assets/icons/default_home.svg',
-        "route": AppRoutes.profileScreen,
+        "route": AppRoutes.homeScreen,
       },
       {
         "icon": AppIcons.search ?? 'assets/icons/default_home.svg',

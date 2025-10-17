@@ -30,5 +30,7 @@ class AppIcons{
   static String report ="$baseUrl/report.svg";
   static String terms ="$baseUrl/terms.svg";
   static String signOut ="$baseUrl/signOut.svg";
+  static String message ="$baseUrl/message.svg";
+  static String filter ="$baseUrl/filter.svg";
 
 }
