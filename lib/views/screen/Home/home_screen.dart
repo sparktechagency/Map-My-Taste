@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset(AppImages.logo, width: 162.w, height: 37.h),
             Spacer(),
             InkWell(
-              onTap: () {},
+              onTap: () {Get.toNamed(AppRoutes.notificationsScreen);},
               child: SvgPicture.asset(
                 AppIcons.notification,
                 width: 24.w,

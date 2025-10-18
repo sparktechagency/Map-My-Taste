@@ -431,26 +431,25 @@ class _PostCardState extends State<PostCard> {
                       hintText: 'Write a comment',
                       borderColor: AppColors.primaryColor,
                       maxLines: 2,
+                      suffixIcons: InkWell(
+                          onTap: (){
+                            if (_commentController.text.isNotEmpty) {
+                              setState(() {
+                                comments.add({
+                                  'name': 'You',
+                                  'date': '25 Aug 2025',
+                                  'comment': _commentController.text,
+                                  'avatar':
+                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKbe4FsXoLVUtq5YPBCHgiSX4Owqshk79Ejw&s',
+                                });
+                                _commentController.clear();
+                              });
+                              Navigator.pop(context);
+                            }
+                          },
+                          child: SvgPicture.asset(AppIcons.send))
                     ),
                     SizedBox(height: 12.h),
-                    CustomButton(
-                      onTap: () {
-                        if (_commentController.text.isNotEmpty) {
-                          setState(() {
-                            comments.add({
-                              'name': 'You',
-                              'date': '25 Aug 2025',
-                              'comment': _commentController.text,
-                              'avatar':
-                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKbe4FsXoLVUtq5YPBCHgiSX4Owqshk79Ejw&s',
-                            });
-                            _commentController.clear();
-                          });
-                          Navigator.pop(context);
-                        }
-                      },
-                      text: 'Submit Comment'.tr,
-                    ),
                   ],
                 ),
               ),
