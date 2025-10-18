@@ -10,6 +10,7 @@ import '../views/screen/Conversation/conversation_screen.dart';
 import '../views/screen/Home/home_screen.dart';
 import '../views/screen/Location/location_picker_screen.dart';
 import '../views/screen/Location/location_screen.dart';
+import '../views/screen/Notifications/notifications_screen.dart';
 import '../views/screen/Profile/edit_profile_screen.dart';
 import '../views/screen/Profile/profile_screen.dart';
 import '../views/screen/ReportAProblem/report_problem_screen.dart';
@@ -36,6 +37,7 @@ class AppRoutes{
   static String chatScreen="/chat_screen";
   static String locationScreen="/location_screen";
   static String locationPickerScreen="/location_picker_screen";
+  static String notificationsScreen="/notifications_screen";
 
  static List<GetPage> page=[
     GetPage(name:splashScreen, page: ()=>const SplashScreen()),
@@ -50,6 +52,7 @@ class AppRoutes{
     GetPage(name:termsPoliciesScreen, page: ()=> TermsPoliciesScreen()),
     GetPage(name:conversationScreen, page: ()=> ConversationScreen()),
     GetPage(name:chatScreen, page: ()=> ChatScreen()),
+    GetPage(name:notificationsScreen, page: ()=> NotificationsScreen()),
     GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
   //  GetPage(name:categoriesScreen, page: ()=>const CategoriesScreen(),transition:Transition.noTransition),
     GetPage(name:profileScreen, page: ()=>const ProfileScreen(),transition: Transition.noTransition),

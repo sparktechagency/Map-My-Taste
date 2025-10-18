@@ -34,5 +34,8 @@ class AppIcons{
   static String filter ="$baseUrl/filter.svg";
   static String dot ="$baseUrl/dot.svg";
   static String send ="$baseUrl/send.svg";
+  static String block ="$baseUrl/block.svg";
+  static String delete ="$baseUrl/delete.svg";
+  static String mute ="$baseUrl/mute.svg";
 
 }

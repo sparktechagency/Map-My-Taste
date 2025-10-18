@@ -11,7 +11,6 @@ import 'package:grouped_list/grouped_list.dart';
 import '../../../../../../utils/app_colors.dart';
 import '../../../../../../utils/app_icons.dart';
 import '../../../../../../utils/app_images.dart';
-import '../../base/custom_network_image.dart';
 import '../../base/custom_text.dart';
 import '../../base/custom_text_field.dart';
 
@@ -100,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Flexible(
           child: CustomText(
             text: 'Motin miar Pizza Ghur',
-            fontSize: 18.sp,
+            fontSize: 20.sp,
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
@@ -161,7 +160,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 "status": "sender",
                 "message": messageController.text,
                 "image": AppImages.onboard1,
-                "date": "2025-12-24", // Set current date for the new message
+                "date": "2025-12-24",
               };
               if (messageController.text.isNotEmpty) {
                 messageList.add(newMessage);
@@ -295,23 +294,54 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  //==============================> Popup Menu Button <===================================
+
   PopupMenuButton<int> _popupMenuButton() {
     return PopupMenuButton<int>(
       padding: EdgeInsets.zero,
       icon: SvgPicture.asset(AppIcons.dot, color: Colors.white),
       onSelected: (int result) {
-        print('Block User');
+        print(result);
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
         PopupMenuItem<int>(
           value: 0,
-          child: Text(
-            'Block User'.tr,
-            style: TextStyle(color: Colors.black),
+          child: Row(
+            children: [
+              SvgPicture.asset(AppIcons.mute),
+              SizedBox(width: 8.w),
+              CustomText(
+                text: 'Mute'.tr,
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              SvgPicture.asset(AppIcons.delete),
+              SizedBox(width: 8.w),
+              CustomText(
+                text: 'Delete'.tr,
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              SvgPicture.asset(AppIcons.block),
+              SizedBox(width: 8.w),
+              CustomText(
+                text: 'Block'.tr,
+              ),
+            ],
           ),
         ),
       ],
-      color: Colors.white,
+      color: AppColors.fillColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
     );
   }
