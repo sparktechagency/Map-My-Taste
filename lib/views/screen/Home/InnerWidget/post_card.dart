@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_icons.dart';
 import '../../../../utils/app_strings.dart';
 import '../../../base/custom_button.dart';
 import '../../../base/custom_network_image.dart';
@@ -95,6 +97,7 @@ class _PostCardState extends State<PostCard> {
                     ],
                   ),
                 ),
+                _popupMenuButton()
               ],
             ),
           ),
@@ -455,6 +458,40 @@ class _PostCardState extends State<PostCard> {
           ),
         );
       },
+    );
+  }
+  //================================> Popup Menu Button Method <=============================
+  PopupMenuButton<int> _popupMenuButton() {
+    return PopupMenuButton<int>(
+      padding: EdgeInsets.zero,
+      icon: SvgPicture.asset(AppIcons.dot, color: Colors.white),
+      surfaceTintColor: AppColors.fillColor,
+      offset: Offset(-10, 15),
+      onSelected: (int result) {
+        print(result);
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+        PopupMenuItem<int>(
+          onTap: (){
+            //Add method call here
+          },
+          value: 0,
+          child: CustomText(
+           text:  'Add Favorite'.tr,
+          ),
+        ),
+        PopupMenuItem<int>(
+          onTap: (){
+            //Block method call here
+          },
+          value: 1,
+          child: CustomText(
+           text:  'Block User'.tr,
+          ),
+        ),
+      ],
+      color: AppColors.fillColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
     );
   }
 }

@@ -5,6 +5,8 @@ import '../views/screen/Auth/otp_screen.dart';
 import '../views/screen/Auth/reset_password_screen.dart';
 import '../views/screen/Auth/sign_in_screen.dart';
 import '../views/screen/Auth/sign_up_screen.dart';
+import '../views/screen/Conversation/chat_screen.dart';
+import '../views/screen/Conversation/conversation_screen.dart';
 import '../views/screen/Home/home_screen.dart';
 import '../views/screen/Location/location_picker_screen.dart';
 import '../views/screen/Location/location_screen.dart';
@@ -30,6 +32,8 @@ class AppRoutes{
   static String profileScreen="/profile_screen";
   static String editProfileScreen="/edit_profile_screen";
   static String categoriesScreen="/categories_screen";
+  static String conversationScreen="/conversation_screen";
+  static String chatScreen="/chat_screen";
   static String locationScreen="/location_screen";
   static String locationPickerScreen="/location_picker_screen";
 
@@ -44,6 +48,8 @@ class AppRoutes{
     GetPage(name:otpScreen, page: ()=> OtpScreen()),
     GetPage(name:reportProblemScreen, page: ()=> ReportProblemScreen()),
     GetPage(name:termsPoliciesScreen, page: ()=> TermsPoliciesScreen()),
+    GetPage(name:conversationScreen, page: ()=> ConversationScreen()),
+    GetPage(name:chatScreen, page: ()=> ChatScreen()),
     GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
   //  GetPage(name:categoriesScreen, page: ()=>const CategoriesScreen(),transition:Transition.noTransition),
     GetPage(name:profileScreen, page: ()=>const ProfileScreen(),transition: Transition.noTransition),
