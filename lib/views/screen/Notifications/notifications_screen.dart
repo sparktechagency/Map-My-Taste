@@ -80,6 +80,12 @@ class NotificationsScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
+                            _popupMenu()
+                            // InkWell(
+                            //   onTap: (){
+                            //
+                            //   },
+                            //     child: SvgPicture.asset(AppIcons.dot))
                           ],
                         ),
                       ],
@@ -96,11 +102,10 @@ class NotificationsScreen extends StatelessWidget {
   }
 
   //==============================> Popup Menu Button <===================================
-
   PopupMenuButton<int> _popupMenuButton() {
     return PopupMenuButton<int>(
       padding: EdgeInsets.zero,
-      icon: SvgPicture.asset(AppIcons.dot, color: Colors.white),
+      icon: SvgPicture.asset(AppIcons.dot),
       onSelected: (int result) {
         print(result);
       },
@@ -125,6 +130,45 @@ class NotificationsScreen extends StatelessWidget {
               SizedBox(width: 8.w),
               CustomText(
                 text: 'Delete all'.tr,
+              ),
+            ],
+          ),
+        ),
+      ],
+      color: AppColors.fillColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+    );
+  }
+
+  //==============================> Popup Menu Button <===================================
+  PopupMenuButton<int> _popupMenu() {
+    return PopupMenuButton<int>(
+      padding: EdgeInsets.zero,
+      icon: SvgPicture.asset(AppIcons.dot),
+      onSelected: (int result) {
+        print(result);
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              SvgPicture.asset(AppIcons.mute),
+              SizedBox(width: 8.w),
+              CustomText(
+                text: 'Turn off notification'.tr,
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<int>(
+          value: 0,
+          child: Row(
+            children: [
+              SvgPicture.asset(AppIcons.delete),
+              SizedBox(width: 8.w),
+              CustomText(
+                text: 'Delete this notification'.tr,
               ),
             ],
           ),
