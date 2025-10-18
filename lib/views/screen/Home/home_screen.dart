@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:map_my_taste/helpers/route.dart';
 import 'package:map_my_taste/utils/app_icons.dart';
 import 'package:map_my_taste/utils/app_images.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
@@ -41,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(width: 16.w),
             InkWell(
-              onTap: () {},
+              onTap: () {Get.toNamed(AppRoutes.conversationScreen);},
               child: SvgPicture.asset(
                 AppIcons.message,
                 width: 24.w,

@@ -47,6 +47,8 @@ dependencies:
   intl: ^0.18.1
   timeago: ^3.7.1
   shimmer: ^3.0.0
+  grouped_list: ^6.0.0
+  flutter_chat_bubble: ^2.0.2
 
 
 
