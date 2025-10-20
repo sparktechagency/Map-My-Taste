@@ -81,11 +81,6 @@ class NotificationsScreen extends StatelessWidget {
                               ),
                             ),
                             _popupMenu()
-                            // InkWell(
-                            //   onTap: (){
-                            //
-                            //   },
-                            //     child: SvgPicture.asset(AppIcons.dot))
                           ],
                         ),
                       ],
@@ -140,7 +135,7 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  //==============================> Popup Menu Button <===================================
+  //==============================> Popup Menu  <===================================
   PopupMenuButton<int> _popupMenu() {
     return PopupMenuButton<int>(
       padding: EdgeInsets.zero,

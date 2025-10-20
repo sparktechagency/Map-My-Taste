@@ -88,8 +88,8 @@ class BottomMenu extends StatelessWidget {
                     children: [
                       SvgPicture.asset(
                         item["icon"]!,
-                        height: 24.w,
-                        width: 24.w,
+                        height: 28.w,
+                        width: 28.w,
                       ),
                     ],
                   ),
