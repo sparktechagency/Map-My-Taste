@@ -8,6 +8,7 @@ import 'package:map_my_taste/utils/app_images.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
 import 'package:map_my_taste/views/base/bottom_menu..dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
+import 'InnerWidget/filter_bottom_sheet.dart';
 import 'InnerWidget/post_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -71,7 +72,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return FilterBottomSheet();
+                        },
+                      );
+
+                    },
                     child: SvgPicture.asset(AppIcons.filter),
                   ),
                 ],
