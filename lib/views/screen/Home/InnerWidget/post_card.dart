@@ -210,7 +210,7 @@ class _PostCardState extends State<PostCard> {
                   onTap: _toggleDescription,
                   child: CustomText(
                     text: isDescriptionExpanded ? 'Show Less' : 'Show More',
-                    color: AppColors.secondaryButtonColor,
+                    color: AppColors.primaryColor,
                     fontSize: 14.sp,
                   ),
                 ),

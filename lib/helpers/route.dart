@@ -7,6 +7,7 @@ import '../views/screen/Auth/sign_in_screen.dart';
 import '../views/screen/Auth/sign_up_screen.dart';
 import '../views/screen/Conversation/chat_screen.dart';
 import '../views/screen/Conversation/conversation_screen.dart';
+import '../views/screen/Explore/explore_screen.dart';
 import '../views/screen/Favorites/favorites_screen.dart';
 import '../views/screen/Home/home_screen.dart';
 import '../views/screen/Location/location_picker_screen.dart';
@@ -37,6 +38,7 @@ class AppRoutes{
   static String conversationScreen="/conversation_screen";
   static String chatScreen="/chat_screen";
   static String favoritesScreen="/favorites_screen";
+  static String exploreScreen="/explore_screen";
   static String locationScreen="/location_screen";
   static String locationPickerScreen="/location_picker_screen";
   static String notificationsScreen="/notifications_screen";
@@ -57,7 +59,7 @@ class AppRoutes{
     GetPage(name:notificationsScreen, page: ()=> NotificationsScreen()),
     GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
     GetPage(name:favoritesScreen, page: ()=> FavoritesScreen(),transition:Transition.noTransition),
-  //  GetPage(name:categoriesScreen, page: ()=>const CategoriesScreen(),transition:Transition.noTransition),
+    GetPage(name:exploreScreen, page: ()=>const ExploreScreen(),transition:Transition.noTransition),
     GetPage(name:profileScreen, page: ()=>const ProfileScreen(),transition: Transition.noTransition),
     GetPage(name:editProfileScreen, page: ()=>const EditProfileScreen()),
    // GetPage(name:locationScreen, page: ()=>const LocationScreen(),transition: Transition.noTransition),
