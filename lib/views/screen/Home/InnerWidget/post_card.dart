@@ -253,7 +253,7 @@ class _PostCardState extends State<PostCard> {
               ),
             ),
           ),
-
+          Divider(thickness: 0.3, color: AppColors.greyColor),
           //=====================> Like And Comment <======================
           Padding(
             padding: EdgeInsets.all(10.w),
