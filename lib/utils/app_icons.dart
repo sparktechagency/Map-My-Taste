@@ -37,5 +37,12 @@ class AppIcons{
   static String block ="$baseUrl/block.svg";
   static String delete ="$baseUrl/delete.svg";
   static String mute ="$baseUrl/mute.svg";
+  static String restaurants ="$baseUrl/restaurants.svg";
+  static String hospital ="$baseUrl/hospital.svg";
+  static String hotel ="$baseUrl/hotel.svg";
+  static String museums ="$baseUrl/museums.svg";
+  static String parks ="$baseUrl/parks.svg";
+  static String pharmacies ="$baseUrl/pharmacies.svg";
+  static String things ="$baseUrl/things.svg";
 
 }
