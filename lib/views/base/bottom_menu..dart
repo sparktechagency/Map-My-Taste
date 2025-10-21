@@ -24,7 +24,7 @@ class BottomMenu extends StatelessWidget {
       },
       {
         "icon": AppIcons.love ?? 'assets/icons/default_home.svg',
-        "route": AppRoutes.profileScreen,
+        "route": AppRoutes.favoritesScreen,
       },
       {
         "icon": AppIcons.explore ?? 'assets/icons/default_home.svg',
