@@ -16,6 +16,9 @@ import '../views/screen/Notifications/notifications_screen.dart';
 import '../views/screen/Profile/edit_profile_screen.dart';
 import '../views/screen/Profile/profile_screen.dart';
 import '../views/screen/ReportAProblem/report_problem_screen.dart';
+import '../views/screen/Reviews/reviews_screen.dart';
+import '../views/screen/Search/details_screen.dart';
+import '../views/screen/Search/search_screen.dart';
 import '../views/screen/Splash/onboarding_screen.dart';
 import '../views/screen/Splash/splash_screen.dart';
 import '../views/screen/Terms&Policies/terms_policies_screen.dart';
@@ -38,7 +41,10 @@ class AppRoutes{
   static String conversationScreen="/conversation_screen";
   static String chatScreen="/chat_screen";
   static String favoritesScreen="/favorites_screen";
+  static String searchScreen="/search_screen";
+  static String detailsScreen="/details_screen";
   static String exploreScreen="/explore_screen";
+  static String reviewsScreen="/reviews_screen";
   static String locationScreen="/location_screen";
   static String locationPickerScreen="/location_picker_screen";
   static String notificationsScreen="/notifications_screen";
@@ -58,7 +64,10 @@ class AppRoutes{
     GetPage(name:chatScreen, page: ()=> ChatScreen()),
     GetPage(name:notificationsScreen, page: ()=> NotificationsScreen()),
     GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
-    GetPage(name:favoritesScreen, page: ()=> FavoritesScreen(),transition:Transition.noTransition),
+    GetPage(name:searchScreen, page: ()=> SearchScreen(),transition:Transition.noTransition),
+   GetPage(name:detailsScreen, page: ()=>const DetailsScreen()),
+   GetPage(name:reviewsScreen, page: ()=>const ReviewsScreen()),
+   GetPage(name:favoritesScreen, page: ()=> FavoritesScreen(),transition:Transition.noTransition),
     GetPage(name:exploreScreen, page: ()=>const ExploreScreen(),transition:Transition.noTransition),
     GetPage(name:profileScreen, page: ()=>const ProfileScreen(),transition: Transition.noTransition),
     GetPage(name:editProfileScreen, page: ()=>const EditProfileScreen()),

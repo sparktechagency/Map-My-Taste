@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:map_my_taste/helpers/route.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/app_strings.dart';
 import '../../base/custom_app_bar.dart';
@@ -49,7 +50,7 @@ class ResetPasswordScreen extends StatelessWidget {
               ),
               SizedBox(height: 209.h),
               //============================> Confirm Button <===================================
-              CustomButton(onTap: () {}, text: AppStrings.confirm),
+              CustomButton(onTap: () {Get.toNamed(AppRoutes.signInScreen);}, text: AppStrings.confirm),
               SizedBox(height: 24.h),
             ],
           ),

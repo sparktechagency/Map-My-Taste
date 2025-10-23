@@ -1,6 +1,6 @@
 class AppIcons{
   static String baseUrl="assets/icons";
-  static String homeIcon="$baseUrl/home_icon.svg";
+  static String homeIcon="$baseUrl/activeHome.svg";
   static String walletIcon="$baseUrl/wallet_icon.svg";
   static String profileIcon="$baseUrl/profile_icon.svg";
   static String home="$baseUrl/home.svg";
@@ -44,5 +44,12 @@ class AppIcons{
   static String parks ="$baseUrl/parks.svg";
   static String pharmacies ="$baseUrl/pharmacies.svg";
   static String things ="$baseUrl/things.svg";
+  static String food ="$baseUrl/food.svg";
+  static String activeHome ="$baseUrl/activeHome.svg";
+  static String activeSearch ="$baseUrl/activeSearch.svg";
+  static String activeLove ="$baseUrl/activeLove.svg";
+  static String activeExplore ="$baseUrl/activeExplore.svg";
+  static String activeProfile ="$baseUrl/activeProfile.svg";
+  static String favorites ="$baseUrl/favorites.svg";
 
 }

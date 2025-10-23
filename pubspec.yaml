@@ -49,7 +49,8 @@ dependencies:
   shimmer: ^3.0.0
   grouped_list: ^6.0.0
   flutter_chat_bubble: ^2.0.2
-
+  google_maps_flutter: ^2.13.1
+  geocoding: ^4.0.0
 
 
 dev_dependencies:
