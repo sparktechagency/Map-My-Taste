@@ -127,13 +127,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 32.h),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _commonPlace(
                             SvgPicture.asset(AppIcons.location),
                             '1578', AppStrings.placeVisited.tr),
                         _commonPlace(
-                            SvgPicture.asset(AppIcons.love),
+                            SvgPicture.asset(AppIcons.favorites),
                             '1578', AppStrings.favorites.tr),
                         _commonPlace(
                             SvgPicture.asset(AppIcons.star),

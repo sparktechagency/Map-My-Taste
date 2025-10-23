@@ -51,7 +51,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Align(
               alignment: Alignment.topRight,
               child: InkWell(
-                onTap: () {},
+                onTap: () {Get.toNamed(AppRoutes.signInScreen);},
                 child: CustomText(
                   text: AppStrings.skip.tr,
                   fontSize: 16.sp,

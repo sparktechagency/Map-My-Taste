@@ -74,7 +74,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               SizedBox(height: 24.h),
               //=============================> Top categories <=========================
               SizedBox(
-                height: 100.h,
+                height: 110.h,
                 child: ListView(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,

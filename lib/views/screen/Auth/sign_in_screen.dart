@@ -65,7 +65,7 @@ class SignInScreen extends StatelessWidget {
                 ),
               ),
               //============================> Log In Button <===================================
-              CustomButton(onTap: () {}, text: AppStrings.logIn.tr),
+              CustomButton(onTap: () {Get.offAllNamed(AppRoutes.homeScreen);}, text: AppStrings.logIn.tr),
               SizedBox(height: 48.h),
               //============================> Or Row <===================================
               Row(

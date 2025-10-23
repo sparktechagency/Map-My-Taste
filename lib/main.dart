@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
                   ),
                   transitionDuration: const Duration(milliseconds: 500),
                   getPages: AppRoutes.page,
-                  initialRoute: AppRoutes.homeScreen,
+                  initialRoute: AppRoutes.splashScreen,
                 );
               },
             );
