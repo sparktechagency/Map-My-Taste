@@ -97,7 +97,7 @@ class SignInScreen extends StatelessWidget {
                       SvgPicture.asset(AppIcons.google),
                       SizedBox(width: 8.w),
                       CustomText(
-                        text: AppStrings.loginWithApple.tr,
+                        text: AppStrings.loginWithGoogle.tr,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
                       ),
