@@ -23,13 +23,10 @@ class NotificationsScreen extends StatelessWidget {
           },
           child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
-        title: Flexible(
-          child: CustomText(
-            text: AppStrings.notification.tr,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
+        title: CustomText(
+          text: AppStrings.notification.tr,
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w700,
         ),
         centerTitle: true,
         actions: [
