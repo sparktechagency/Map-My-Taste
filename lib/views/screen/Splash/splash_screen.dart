@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed( Duration(seconds: 6), () {
   /*var isLogged = await PrefsHelper.getBool(AppConstants.isLogged);
       if (isLogged == true) {
         Get.offAllNamed(AppRoutes.homeScreen);

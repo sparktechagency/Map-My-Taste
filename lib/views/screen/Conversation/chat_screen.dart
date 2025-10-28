@@ -96,13 +96,10 @@ class _ChatScreenState extends State<ChatScreen> {
           },
           child: const Icon(Icons.arrow_back_ios, color: Colors.white),
         ),
-        title: Flexible(
-          child: CustomText(
-            text: 'Motin miar Pizza Ghur',
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
+        title: CustomText(
+          text: 'Motin miar Pizza Ghur',
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w700,
         ),
         centerTitle: true,
         actions: [
@@ -148,7 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       //==============================> Sent Message Text Field <===================================
       bottomSheet: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 32.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         child: CustomTextField(
           borderColor: AppColors.primaryColor,
           controller: messageController,
