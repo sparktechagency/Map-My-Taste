@@ -1,8 +1,5 @@
-/*
 import 'package:get/get.dart';
-import 'package:project_template/helpers/route.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/app_constants.dart';
 
 class PrefsHelper extends GetxController {
   static String token = "";
@@ -91,4 +88,4 @@ class PrefsHelper extends GetxController {
     // preferences.remove("clientId");
     //Get.offAllNamed(AppRoutes.logInScreen);
   }
-}*/
+}

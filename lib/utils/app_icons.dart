@@ -51,5 +51,6 @@ class AppIcons{
   static String activeExplore ="$baseUrl/activeExplore.svg";
   static String activeProfile ="$baseUrl/activeProfile.svg";
   static String favorites ="$baseUrl/favorites.svg";
+  static String clock ="$baseUrl/clock.svg";
 
 }
