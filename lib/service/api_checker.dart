@@ -1,4 +1,3 @@
-/*
 import 'package:get/get.dart';
 import '../helpers/prefs_helpers.dart';
 import '../helpers/route.dart';
@@ -18,4 +17,3 @@ class ApiChecker {
     }
   }
 }
-*/
