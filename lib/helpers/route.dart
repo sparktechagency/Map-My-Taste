@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../views/screen/Auth/change_password_screen.dart';
+import '../views/screen/Auth/forgot_otp_screen.dart';
 import '../views/screen/Auth/forgot_password_screen.dart';
 import '../views/screen/Auth/otp_screen.dart';
 import '../views/screen/Auth/reset_password_screen.dart';
@@ -32,6 +33,7 @@ class AppRoutes{
   static String resetPasswordScreen="/reset_password_screen";
   static String changePasswordScreen="/change_password_screen";
   static String otpScreen="/otp_screen";
+  static String forgotOtpScreen="/forgot_otp_screen";
   static String reportProblemScreen="/report_problem_screen";
   static String termsPoliciesScreen="/terms_policies_screen";
   static String homeScreen="/home_screen";
@@ -58,6 +60,7 @@ class AppRoutes{
     GetPage(name:resetPasswordScreen, page: ()=> ResetPasswordScreen()),
     GetPage(name:changePasswordScreen, page: ()=> ChangePasswordScreen()),
     GetPage(name:otpScreen, page: ()=> OtpScreen()),
+    GetPage(name:forgotOtpScreen, page: ()=> ForgotOtpScreen()),
     GetPage(name:reportProblemScreen, page: ()=> ReportProblemScreen()),
     GetPage(name:termsPoliciesScreen, page: ()=> TermsPoliciesScreen()),
     GetPage(name:conversationScreen, page: ()=> ConversationScreen()),
