@@ -3,8 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
+import '../../../../helpers/prefs_helpers.dart';
 import '../../../../helpers/route.dart';
 import '../../../../utils/app_colors.dart';
+import '../../../../utils/app_constants.dart';
 import '../../../../utils/app_icons.dart';
 import '../../../base/custom_button.dart';
 import '../../../base/custom_list_tile.dart';
@@ -179,12 +181,11 @@ class _DrawerSectionState extends State<DrawerSection> {
                                   child: CustomButton(
                                     text: 'Yes'.tr,
                                     fontSize: 16.h,
-                                    onTap: () {
-                                      /* await PrefsHelper.remove(AppConstants.isLogged);
-                                                await PrefsHelper.remove(AppConstants.userId);
-                                                // await PrefsHelper.remove(AppConstants.bearerToken);
-                                                await PrefsHelper.remove(AppConstants.subscription);
-                                                _authController.googleSignIn.signOut();*/
+                                    onTap: () async  {
+                                       await PrefsHelper.remove(AppConstants.isLogged);
+                                                await PrefsHelper.remove(AppConstants.id);
+                                                await PrefsHelper.remove(AppConstants.bearerToken);
+                                               // _authController.googleSignIn.signOut();
                                       Get.offAllNamed(AppRoutes.signInScreen);
                                     },
                                   ),

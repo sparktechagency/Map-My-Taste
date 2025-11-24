@@ -12,14 +12,14 @@ import '../../../utils/app_strings.dart';
 import '../../base/custom_app_bar.dart';
 import '../../base/custom_text.dart';
 
-class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+class ForgotOtpScreen extends StatefulWidget {
+  const ForgotOtpScreen({super.key});
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  State<ForgotOtpScreen> createState() => _ForgotOtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
+class _ForgotOtpScreenState extends State<ForgotOtpScreen> {
   final AuthController _authController = Get.put(AuthController());
   var parameters = Get.parameters;
 
@@ -101,7 +101,7 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
               //============================> Pin Code Field  <===================================
               CustomPinCodeTextField(
-                textEditingController: _authController.otpCtrl,
+                textEditingController: _authController.otpCtrlForgot,
               ),
               SizedBox(height: 24.h),
               //========================> Timer Field <==================
@@ -136,10 +136,11 @@ class _OtpScreenState extends State<OtpScreen> {
               SizedBox(height: 239.h),
               //============================> Confirm Button <===================================
               Obx(()=> CustomButton(
-                  loading: _authController.otpLoading.value,
+                  loading: _authController.forgotOtpLoading.value,
                   onTap: () {
-                    _authController.handleOtpVery(email: "${parameters["email"]}",
-                        otp: _authController.otpCtrl.text,
+                    _authController.otpVerifyForgotPass(
+                        email: "${parameters["email"]}",
+                        otp: _authController.otpCtrlForgot.text,
                         screenType: "${parameters["screenType"]}");
                   },
 

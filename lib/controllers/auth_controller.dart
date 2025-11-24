@@ -121,50 +121,19 @@ class AuthController extends GetxController {
       otpLoading(false);
     }
   }
- /* TextEditingController otpCtrl = TextEditingController();
-  var otpLoading = false.obs;
-  handleOtpVery(
-      {required String email,
-        required String otp,
-        required String screenType}) async {
-    try {
-      var body = {'otp': otpCtrl.text, 'email': email};
-      var headers = {'Content-Type': 'application/json'};
-      otpLoading(true);
-      Response response = await ApiClient.postData(
-          ApiConstants.otpVerifyEndPoint, jsonEncode(body),
-          headers: headers);
-      print("============>${response.body} and ${response.statusCode}");
-      if (response.statusCode == 200) {
-        print('Token=============>${response.body["data"]['accessToken']}');
-        await PrefsHelper.setString(AppConstants.bearerToken, response.body["data"]['accessToken']);
-        otpCtrl.clear();
-        if (screenType == "forgetPasswordScreen") {
-          Get.offAllNamed(AppRoutes.resetPasswordScreen,
-              parameters: {"email": email});
-        } else {
-          Get.offAllNamed(AppRoutes.signInScreen, parameters: {"email": email});
-        }
-      } else {
-        ApiChecker.checkApi(response);
-        Fluttertoast.showToast(msg: response.statusText ?? "");
-      }
-    } catch (e, s) {
-      print("===> e : $e");
-      print("===> s : $s");
-    }
-    otpLoading(false);
-  }*/
+
   //=================> Resend otp <=====================
   var resendOtpLoading = false.obs;
   resendOtp(String email) async {
     resendOtpLoading(true);
     var body = {"email": email};
-    Map<String, String> header = {'Content-Type': 'application/json'};
-    var response = await ApiClient.postData(
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${await PrefsHelper.getString(AppConstants.bearerToken)}'
+    };    var response = await ApiClient.postData(
       ApiConstants.resendOtpEndPoint,
       json.encode(body),
-      headers: header,
+      headers: headers,
     );
     print("===> ${response.body}");
     if (response.statusCode == 200) {
@@ -261,7 +230,7 @@ class AuthController extends GetxController {
     Map<String, dynamic> body = {
       'email': signInEmailCtrl.text.trim(),
       'password': signInPassCtrl.text.trim(),
-      "fcmToken": "fcmToken..",
+     // "fcmToken": "fcmToken..",
     };
     Response response = await ApiClient.postData(
       ApiConstants.signInEndPoint,
@@ -270,11 +239,8 @@ class AuthController extends GetxController {
     );
     print("====> ${response.body}");
     if (response.statusCode == 200) {
-      await PrefsHelper.setString(AppConstants.bearerToken, response.body['data']['verificationToken']);
-      await PrefsHelper.setString(
-        AppConstants.id,
-        response.body['data']['attributes']['user']['id'],
-      );
+      await PrefsHelper.setString(AppConstants.bearerToken, response.body['data']['accessToken']);
+      await PrefsHelper.setString(AppConstants.id, response.body['data']['user']['id']);
       await PrefsHelper.setBool(AppConstants.isLogged, true);
       Get.offAllNamed(AppRoutes.homeScreen);
       await PrefsHelper.setBool(AppConstants.isLogged, true);
@@ -304,17 +270,57 @@ class AuthController extends GetxController {
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
       Get.toNamed(
-        AppRoutes.otpScreen,
+        AppRoutes.forgotOtpScreen,
         parameters: {
           "email": forgetEmailTextCtrl.text.trim(),
           "screenType": "forgetPasswordScreen",
         },
       );
       forgetEmailTextCtrl.clear();
+      forgotLoading(false);
     } else {
       ApiChecker.checkApi(response);
     }
     forgotLoading(false);
+  }
+
+  //===================> Otp very Forgot Password <=======================
+  TextEditingController otpCtrlForgot = TextEditingController();
+  var forgotOtpLoading = false.obs;
+
+  otpVerifyForgotPass({
+    required String email,
+    required String otp,
+    required String screenType,
+  }) async {
+    try {
+      forgotOtpLoading(true);
+      var body = {'email': email, 'otp': otp};
+      Map<String, String> header = {'Content-Type': 'application/json'};
+
+      Response response = await ApiClient.postData(
+        ApiConstants.verifyResetOtpEndPoint,
+        jsonEncode(body),
+        headers: header,
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        otpCtrlForgot.clear();
+
+        if (data['data']?['accessToken'] != null) {
+          await PrefsHelper.setString(AppConstants.bearerToken, data['data']['accessToken']);
+        }
+        Get.offAllNamed(AppRoutes.resetPasswordScreen);
+        Fluttertoast.showToast(msg: data['message'] ?? "OTP verified");
+      } else {
+        Fluttertoast.showToast(msg: response.statusText ?? "Verification failed");
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error: $e");
+    } finally {
+      forgotOtpLoading(false);
+    }
   }
 
   //======================> Change password <============================
@@ -323,9 +329,9 @@ class AuthController extends GetxController {
   TextEditingController newPasswordCtrl = TextEditingController();
   TextEditingController confirmPassController = TextEditingController();
 
-  changePassword(String oldPassword, String newPassword) async {
+  handleChangePassword(String oldPassword, String newPassword) async {
     changePassLoading(true);
-    var body = {"oldPassword": oldPassword, "newPassword": newPassword};
+    var body = {"currentPassword": oldPassword, "password": newPassword};
     var response = await ApiClient.postData(
       ApiConstants.changePasswordEndPoint,
       body,
@@ -349,12 +355,14 @@ class AuthController extends GetxController {
 
   //=============================> Set New password <===========================
   var resetPasswordLoading = false.obs;
-  resetPassword(String email, String password) async {
-    print("=======> $email, and $password");
+  resetPassword(String password, String confirmPassword) async {
+    print("=======> $password, and $confirmPassword");
     resetPasswordLoading(true);
-    var body = {"email": email, "password": password};
-    Map<String, String> header = {'Content-Type': 'application/json'};
-    var response = await ApiClient.postData(
+    var body = {"password": password, "confirmPassword": confirmPassword};
+    var header = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${await PrefsHelper.getString(AppConstants.bearerToken)}'
+    };    var response = await ApiClient.postData(
       ApiConstants.resetPasswordEndPoint,
       json.encode(body),
       headers: header,
