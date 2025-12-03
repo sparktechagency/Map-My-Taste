@@ -20,8 +20,23 @@ class ForgotOtpScreen extends StatefulWidget {
 }
 
 class _ForgotOtpScreenState extends State<ForgotOtpScreen> {
-  final AuthController _authController = Get.put(AuthController());
+  late final AuthController _authController;
+  final TextEditingController _otpController = TextEditingController();
   var parameters = Get.parameters;
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+    if (Get.arguments != null && Get.arguments['isPassreset'] != null) {
+      getResetPass();
+    }
+    // Only put the controller if it's not already registered to avoid multiple instances
+    if (!Get.isRegistered<AuthController>()) {
+      Get.put(AuthController());
+    }
+    _authController = Get.find();
+  }
 
   int _start = 180;
   Timer _timer = Timer(const Duration(seconds: 1), () {});
@@ -48,15 +63,6 @@ class _ForgotOtpScreenState extends State<ForgotOtpScreen> {
 
   bool isResetPassword = false;
 
-  @override
-  void initState() {
-    super.initState();
-    startTimer();
-    if (Get.arguments != null && Get.arguments['isPassreset'] != null) {
-      getResetPass();
-    }
-  }
-
   getResetPass() {
     var isResetPass = Get.arguments['isPassreset'];
     if (isResetPass) {
@@ -71,6 +77,7 @@ class _ForgotOtpScreenState extends State<ForgotOtpScreen> {
 
   @override
   void dispose() {
+    _otpController.dispose();
     _timer.cancel();
     super.dispose();
   }
@@ -123,7 +130,7 @@ class _ForgotOtpScreenState extends State<ForgotOtpScreen> {
                 child: InkWell(
                   onTap: _start == 0 ?  () {
                     _authController.resendOtp("${parameters["email"]}");
-                    _authController.otpCtrl.clear();
+                    _otpController.clear(); // Clear the local OTP controller
                     resetTimer();
                   } : null,
                   child: CustomText(

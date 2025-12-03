@@ -22,6 +22,7 @@ class AuthController extends GetxController {
   String? selectedGender;
   bool isChecked = false;
   var signUpLoading = false.obs;
+  var resetPasswordLoading = false.obs;
   var userToken = "";
 
   signUp() async {
@@ -82,7 +83,18 @@ class AuthController extends GetxController {
     required String screenType
   }) async {
     try {
-      var body = {'otp': otpCtrl.text};
+      // Clean and validate the OTP before sending for email verification (signup)
+      String cleanOtp = otp.trim(); // Remove any spaces
+
+      // For email verification during signup, we might not need the same strict 6-digit validation
+      // as the endpoint might be different. Just ensure it's not empty.
+      if (cleanOtp.isEmpty) {
+        Fluttertoast.showToast(msg: "Please enter the OTP");
+        otpLoading(false);
+        return;
+      }
+
+      var body = {'otp': cleanOtp};
       var headers = {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${await PrefsHelper.getString(AppConstants.bearerToken)}'
@@ -100,7 +112,6 @@ class AuthController extends GetxController {
 
       if (response.statusCode == 200) {
         print('OTP Verified Successfully');
-        otpCtrl.clear();
 
         if (screenType == "forgetPasswordScreen") {
           Get.offAllNamed(
@@ -130,7 +141,8 @@ class AuthController extends GetxController {
     var headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ${await PrefsHelper.getString(AppConstants.bearerToken)}'
-    };    var response = await ApiClient.postData(
+    };
+    var response = await ApiClient.postData(
       ApiConstants.resendOtpEndPoint,
       json.encode(body),
       headers: headers,
@@ -295,28 +307,57 @@ class AuthController extends GetxController {
   }) async {
     try {
       forgotOtpLoading(true);
-      var body = {'email': email, 'otp': otp};
-      Map<String, String> header = {'Content-Type': 'application/json'};
+
+      String cleanEmail = email.trim();
+      String cleanOtp = otp.trim();
+
+      // Ensure OTP is exactly 6 digits
+      if (cleanOtp.length != 6) {
+        Fluttertoast.showToast(msg: "OTP must be exactly 6 digits");
+        forgotOtpLoading(false);
+        return;
+      }
+
+      if (!RegExp(r'^\d{6}$').hasMatch(cleanOtp)) {
+        Fluttertoast.showToast(msg: "OTP must contain only numbers");
+        forgotOtpLoading(false);
+        return;
+      }
+      Map<String, String> body = {
+        'email': cleanEmail,
+        'otp': cleanOtp,
+      };
+
+      Map<String, String> header = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
 
       Response response = await ApiClient.postData(
         ApiConstants.verifyResetOtpEndPoint,
-        jsonEncode(body),
+        body,
         headers: header,
       );
 
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        otpCtrlForgot.clear();
+      print("Forgot Password OTP Response: ${response.body} | Status: ${response.statusCode}");
 
-        if (data['data']?['accessToken'] != null) {
+      if (response.statusCode == 200) {
+        forgotOtpLoading(false);
+        var data = response.body is String ? jsonDecode(response.body) : response.body;
+
+        if (data['data']?['resetPasswordToken'] != null) {
+          await PrefsHelper.setString(AppConstants.bearerToken, data['data']['resetPasswordToken']);
+        } else if (data['data']?['accessToken'] != null) {
           await PrefsHelper.setString(AppConstants.bearerToken, data['data']['accessToken']);
         }
         Get.offAllNamed(AppRoutes.resetPasswordScreen);
         Fluttertoast.showToast(msg: data['message'] ?? "OTP verified");
       } else {
+        ApiChecker.checkApi(response);
         Fluttertoast.showToast(msg: response.statusText ?? "Verification failed");
       }
-    } catch (e) {
+    } catch (e, s) {
+      print("Error in otpVerifyForgotPass: $e");
+      print("Stack trace: $s");
       Fluttertoast.showToast(msg: "Error: $e");
     } finally {
       forgotOtpLoading(false);
@@ -354,20 +395,32 @@ class AuthController extends GetxController {
   }
 
   //=============================> Set New password <===========================
-  var resetPasswordLoading = false.obs;
   resetPassword(String password, String confirmPassword) async {
     print("=======> $password, and $confirmPassword");
     resetPasswordLoading(true);
     var body = {"password": password, "confirmPassword": confirmPassword};
+
+    // Get the reset token that was saved after successful OTP verification
+    String resetToken = await PrefsHelper.getString(AppConstants.bearerToken);
+
     var header = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${await PrefsHelper.getString(AppConstants.bearerToken)}'
-    };    var response = await ApiClient.postData(
+    };
+
+    // Add Authorization header with the reset token if it exists
+    if (resetToken != null && resetToken.isNotEmpty) {
+      header['Authorization'] = 'Bearer $resetToken';
+    }
+
+    var response = await ApiClient.postData(
       ApiConstants.resetPasswordEndPoint,
       json.encode(body),
       headers: header,
     );
     if (response.statusCode == 200) {
+      // Clear the temporary token after successful password reset
+      await PrefsHelper.remove(AppConstants.bearerToken);
+
       showDialog(
         context: Get.context!,
         barrierDismissible: false,
