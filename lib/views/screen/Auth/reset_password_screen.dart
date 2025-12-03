@@ -44,6 +44,7 @@ class ResetPasswordScreen extends StatelessWidget {
                 ),
                 //============================> New Password Controller <===================================
                 CustomTextField(
+                  isPassword: true,
                   controller: newPassCTRL,
                   labelText: AppStrings.newPassword.tr,
                   validator: (value) {
@@ -58,6 +59,7 @@ class ResetPasswordScreen extends StatelessWidget {
                 SizedBox(height: 16.h),
                 //============================> Retype New Password Controller <===================================
                 CustomTextField(
+                  isPassword: true,
                   controller: retypePassCTRL,
                   labelText: AppStrings.retypeNewPassword.tr,
                   validator: (value) {
