@@ -15,6 +15,7 @@ class ApiConstants {
   static const String verifyResetOtpEndPoint = "/auth/verify-reset-otp";
   static const String resetPasswordEndPoint = "/auth/reset-password";
   static const String changePasswordEndPoint = "/auth/change-password";
+  static const String getProfileDataEndPoint = "/users/profile";
 
 
 

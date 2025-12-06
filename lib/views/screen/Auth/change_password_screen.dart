@@ -44,6 +44,7 @@ class ChangePasswordScreen extends StatelessWidget {
                 ),
                 //============================> Current Password Controller <===================================
                 CustomTextField(
+                  isPassword: true,
                   controller: _controller.oldPasswordCtrl,
                   labelText: AppStrings.currentPassword.tr,
                   validator: (value) {
@@ -56,6 +57,7 @@ class ChangePasswordScreen extends StatelessWidget {
                 SizedBox(height: 16.h),
                 //============================> New Password Controller <===================================
                 CustomTextField(
+                  isPassword: true,
                   controller: _controller.newPasswordCtrl,
                   labelText: AppStrings.newPassword.tr,
                   validator: (value) {
@@ -70,6 +72,7 @@ class ChangePasswordScreen extends StatelessWidget {
                 SizedBox(height: 16.h),
                 //============================> Retype New Password Controller <===================================
                 CustomTextField(
+                  isPassword: true,
                   controller: _controller.confirmPassController,
                   labelText: AppStrings.retypeNewPassword.tr,
                   validator: (value) {
@@ -90,6 +93,7 @@ class ChangePasswordScreen extends StatelessWidget {
                         _controller.handleChangePassword(
                           _controller.oldPasswordCtrl.text,
                           _controller.newPasswordCtrl.text,
+                          _controller.confirmPassController.text,
                         );
                       }
                     },
