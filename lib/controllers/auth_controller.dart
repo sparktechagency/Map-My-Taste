@@ -83,11 +83,7 @@ class AuthController extends GetxController {
     required String screenType
   }) async {
     try {
-      // Clean and validate the OTP before sending for email verification (signup)
-      String cleanOtp = otp.trim(); // Remove any spaces
-
-      // For email verification during signup, we might not need the same strict 6-digit validation
-      // as the endpoint might be different. Just ensure it's not empty.
+      String cleanOtp = otp.trim();
       if (cleanOtp.isEmpty) {
         Fluttertoast.showToast(msg: "Please enter the OTP");
         otpLoading(false);
@@ -370,9 +366,9 @@ class AuthController extends GetxController {
   TextEditingController newPasswordCtrl = TextEditingController();
   TextEditingController confirmPassController = TextEditingController();
 
-  handleChangePassword(String oldPassword, String newPassword) async {
+  handleChangePassword(String oldPassword, String newPassword, String confirmPassword) async {
     changePassLoading(true);
-    var body = {"currentPassword": oldPassword, "password": newPassword};
+    var body = {"currentPassword": oldPassword, "password": newPassword, "confirmPassword": confirmPassword};
     var response = await ApiClient.postData(
       ApiConstants.changePasswordEndPoint,
       body,
@@ -399,15 +395,11 @@ class AuthController extends GetxController {
     print("=======> $password, and $confirmPassword");
     resetPasswordLoading(true);
     var body = {"password": password, "confirmPassword": confirmPassword};
-
-    // Get the reset token that was saved after successful OTP verification
     String resetToken = await PrefsHelper.getString(AppConstants.bearerToken);
 
     var header = {
       'Content-Type': 'application/json',
     };
-
-    // Add Authorization header with the reset token if it exists
     if (resetToken != null && resetToken.isNotEmpty) {
       header['Authorization'] = 'Bearer $resetToken';
     }
@@ -418,9 +410,7 @@ class AuthController extends GetxController {
       headers: header,
     );
     if (response.statusCode == 200) {
-      // Clear the temporary token after successful password reset
       await PrefsHelper.remove(AppConstants.bearerToken);
-
       showDialog(
         context: Get.context!,
         barrierDismissible: false,
