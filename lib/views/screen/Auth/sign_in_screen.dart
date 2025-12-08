@@ -60,6 +60,7 @@ class SignInScreen extends StatelessWidget {
                 SizedBox(height: 16.h),
                 //============================> Password Controller <===================================
                 CustomTextField(
+                  isPassword : true,
                   controller: _authController.signInPassCtrl,
                   labelText: AppStrings.password.tr,
                   validator: (value) {
