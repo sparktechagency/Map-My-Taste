@@ -51,6 +51,8 @@ class AppRoutes{
   static String locationPickerScreen="/location_picker_screen";
   static String notificationsScreen="/notifications_screen";
 
+  static String businessSearchScreen = "/businesses/search/nearby";
+
  static List<GetPage> page=[
     GetPage(name:splashScreen, page: ()=>const SplashScreen()),
     GetPage(name:onboardingScreen, page: ()=>const OnboardingScreen()),

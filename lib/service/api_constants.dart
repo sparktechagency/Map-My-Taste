@@ -17,7 +17,8 @@ class ApiConstants {
   static const String changePasswordEndPoint = "/auth/change-password";
   static const String getProfileDataEndPoint = "/users/profile";
 
-
+//=============================> Business / Search <=============================
+  static const String searchNearbyBusinessesEndPoint = "/businesses/search/nearby";
 
   static const String termsConditionEndPoint = "";
   static const String privacyPolicyEndPoint = "";

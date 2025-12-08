@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui' as ui;
@@ -5,11 +6,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
+import '../../../controllers/search_controller.dart';
 import '../../../helpers/prefs_helpers.dart';
 import '../../../helpers/route.dart';
 import '../../../utils/app_icons.dart';
@@ -20,7 +22,6 @@ import '../../base/custom_button.dart';
 import '../../base/custom_network_image.dart';
 import '../../base/custom_text.dart';
 import 'InnerWidget/custom_tab.dart';
-import 'package:http/http.dart' as http;
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -30,7 +31,8 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  TextEditingController searchController = TextEditingController();
+  final BusinessSearchController searchController = Get.put(BusinessSearchController());
+  TextEditingController searchTextController = TextEditingController();
   GoogleMapController? _mapController;
   bool _isMapReady = false;
   RxList<String> selectedOptions = <String>[].obs;
@@ -38,7 +40,6 @@ class _SearchScreenState extends State<SearchScreen> {
   final LatLng _defaultPosition = const LatLng(40.730610, -73.935242);
   LatLng? _initialPosition;
   bool isSwitched = false;
-
   BitmapDescriptor? _restaurantIcon;
 
   final List<Map<String, dynamic>> tabs = [
@@ -61,10 +62,28 @@ class _SearchScreenState extends State<SearchScreen> {
     '\$\$\$→\$'.tr,
   ];
 
+  @override
+  void initState() {
+    super.initState();
+
+    _loadCustomIcon().then((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadSavedLocation();
+      });
+    });
+
+    searchTextController.addListener(() {
+      final keyword = searchTextController.text.trim();
+      if (keyword.isNotEmpty) {
+        searchController.search(keyword);
+      }
+    });
+  }
+
+  // ==================== Map & Marker Functions ====================
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     _isMapReady = true;
-
     if (_initialPosition != null) {
       _moveCameraWithOffset(_initialPosition!);
     } else {
@@ -72,19 +91,12 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-
-
   void _moveCameraWithOffset(LatLng position) {
     if (!_isMapReady || _mapController == null) return;
-
     double offset = 0.04;
     LatLng target = LatLng(position.latitude - offset, position.longitude);
-
     _mapController!.animateCamera(CameraUpdate.newLatLng(target));
   }
-
-
-
 
   void _onMapTapped(LatLng tappedPoint) {
     setState(() {
@@ -98,43 +110,38 @@ class _SearchScreenState extends State<SearchScreen> {
     _mapController?.animateCamera(CameraUpdate.newLatLng(tappedPoint));
   }
 
-
-  // Function to convert a Flutter IconData into a BitmapDescriptor
   Future<BitmapDescriptor> getBitmapDescriptorFromIcon(
       IconData iconData, Color color, double size) async {
-
-    // 1. Create a Picture Recorder and Canvas
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
-
-    // 2. Define the icon painter and text style
     final TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
     final String iconText = String.fromCharCode(iconData.codePoint);
 
-    // Use the default Icon font and style it with color and size
     textPainter.text = TextSpan(
-        text: iconText,
-        style: TextStyle(
-            letterSpacing: 0.0,
-            fontSize: size,
-            fontFamily: iconData.fontFamily,
-            color: color));
+      text: iconText,
+      style: TextStyle(
+          fontSize: size, fontFamily: iconData.fontFamily, color: color),
+    );
 
-    // 3. Draw the icon onto the canvas
     textPainter.layout();
-    textPainter.paint(canvas, Offset(0.0, 0.0));
+    textPainter.paint(canvas, Offset.zero);
 
-    // 4. Convert the Canvas drawing (Picture) to an Image
-    final ui.Image image = await pictureRecorder
-        .endRecording()
-        .toImage(textPainter.width.toInt(), textPainter.height.toInt());
+    final ui.Image image =
+    await pictureRecorder.endRecording().toImage(textPainter.width.toInt(), textPainter.height.toInt());
 
-    // 5. Convert the Image to PNG ByteData
     final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    // 6. Return the BitmapDescriptor
     final Uint8List bytes = byteData!.buffer.asUint8List();
+
     return BitmapDescriptor.fromBytes(bytes);
+  }
+
+  Future<void> _loadCustomIcon() async {
+    try {
+      _restaurantIcon = await getBitmapDescriptorFromIcon(Icons.restaurant, Colors.pink, 50);
+    } catch (e) {
+      print("Error loading icon: $e");
+      _restaurantIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
+    }
   }
 
 
@@ -186,59 +193,12 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  //=========================> Search location and update map with marker <=======================
-  Future<void> _searchLocation(String location) async {
-    try {
-      List<Location> locations = await locationFromAddress(location);
-      if (locations.isNotEmpty) {
-        final LatLng newPosition =
-        LatLng(locations.first.latitude, locations.first.longitude);
-     //  _mapController.animateCamera(CameraUpdate.newLatLng(newPosition));
-        setState(() {
-          _markers.clear();
-          _markers.add(Marker(
-            markerId: const MarkerId('selected_location'),
-            position: newPosition,
-            infoWindow: InfoWindow(title: location),
-          ));
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location not found')));
-    }
-  }
-
-
-  Future<void> _loadCustomIcon() async {
-    try {
-      _restaurantIcon = await getBitmapDescriptorFromIcon(
-        Icons.restaurant, // Use the direct Flutter Icon
-        Colors.pink,       // Choose your icon color
-        50,             // Choose your icon size (e.g., 80.0)
-      );
-    } catch (e) {
-      print("Error loading built-in icon as marker: $e");
-      _restaurantIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCustomIcon().then((_) { // Load icon first
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _loadSavedLocation();
-      });
-    });
-  }
 
   void _loadSavedLocation() async {
     String? latStr = await PrefsHelper.getString('latitude');
     String? lonStr = await PrefsHelper.getString('longitude');
 
     LatLng newPosition;
-
     if (latStr.isNotEmpty && lonStr.isNotEmpty) {
       double lat = double.tryParse(latStr) ?? _defaultPosition.latitude;
       double lon = double.tryParse(lonStr) ?? _defaultPosition.longitude;
@@ -247,11 +207,8 @@ class _SearchScreenState extends State<SearchScreen> {
       newPosition = _defaultPosition;
     }
 
-    // Save to _initialPosition
     setState(() {
       _initialPosition = newPosition;
-
-      // Add marker at saved location
       _markers.clear();
       _markers.add(Marker(
         markerId: const MarkerId('saved_location'),
@@ -260,19 +217,144 @@ class _SearchScreenState extends State<SearchScreen> {
       ));
     });
 
-    // Animate camera if map is ready
     _moveCameraWithOffset(_initialPosition!);
 
+    // Set current position in controller & fetch nearby businesses
+    searchController.setCurrentPosition(_initialPosition!);
+
     _loadNearbyRestaurants(_initialPosition!);
-    }
+  }
 
+  // ==================== UI Builder ====================
+  Widget _buildBusinessList() {
+    return Obx(() {
+      if (searchController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (searchController.errorMessage.value.isNotEmpty) {
+        return Center(child: Text(searchController.errorMessage.value));
+      } else if (searchController.businesses.isEmpty) {
+        return Center(child: Text('No restaurants found'));
+      } else {
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: searchController.businesses.length,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          itemBuilder: (context, index) {
+            final business = searchController.businesses[index];
 
+            final String imageUrl = business.photos != null && business.photos!.isNotEmpty
+                ? business.photos!.first.photoUrl
+                : 'https://via.placeholder.com/64'; // fallback image
+
+            final double rating = business.rating ?? 0.0;
+            final double distance = business.distance ?? 0.0;
+            final bool isOpen = business.businessHours?.isOpen ?? false;
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: GestureDetector(
+                onTap: () {
+                  Get.toNamed(AppRoutes.detailsScreen, arguments: business);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.fillColor,
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(10.w),
+                    child: Row(
+                      children: [
+                        CustomNetworkImage(
+                          imageUrl: imageUrl,
+                          height: 64.h,
+                          width: 64.w,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: CustomText(
+                                      text: business.name,
+                                      fontSize: 20.sp,
+                                      textAlign: TextAlign.start,
+                                      maxLine: 2,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.star, color: Colors.yellow, size: 20),
+                                      SizedBox(width: 5),
+                                      CustomText(
+                                        text: rating.toStringAsFixed(1),
+                                        color: AppColors.greyColor,
+                                        fontSize: 16.sp,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 4.h),
+                              Row(
+                                children: [
+                                  CustomText(
+                                    text: business.category,
+                                    fontSize: 16.sp,
+                                    color: AppColors.greyColor,
+                                  ),
+                                  Spacer(),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.location_on_outlined, color: Colors.grey, size: 20),
+                                      SizedBox(width: 5.w),
+                                      CustomText(
+                                        text: '${distance.toStringAsFixed(1)} km',
+                                        color: AppColors.greyColor,
+                                        fontSize: 16.sp,
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColors.secondaryButtonColor,
+                                      borderRadius: BorderRadius.circular(6.r),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                                      child: CustomText(
+                                        text: isOpen ? AppStrings.open.tr : AppStrings.close.tr,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomMenu(1),
-      //=======================================> App Bar Section <===================================
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.black,
@@ -281,25 +363,13 @@ class _SearchScreenState extends State<SearchScreen> {
             Image.asset(AppImages.logo, width: 162.w, height: 37.h),
             Spacer(),
             InkWell(
-              onTap: () {
-                Get.toNamed(AppRoutes.notificationsScreen);
-              },
-              child: SvgPicture.asset(
-                AppIcons.notification,
-                width: 24.w,
-                height: 24.h,
-              ),
+              onTap: () => Get.toNamed(AppRoutes.notificationsScreen),
+              child: SvgPicture.asset(AppIcons.notification, width: 24.w, height: 24.h),
             ),
             SizedBox(width: 16.w),
             InkWell(
-              onTap: () {
-                Get.toNamed(AppRoutes.conversationScreen);
-              },
-              child: SvgPicture.asset(
-                AppIcons.message,
-                width: 24.w,
-                height: 24.h,
-              ),
+              onTap: () => Get.toNamed(AppRoutes.conversationScreen),
+              child: SvgPicture.asset(AppIcons.message, width: 24.w, height: 24.h),
             ),
           ],
         ),
@@ -307,8 +377,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child:
-            GoogleMap(
+            child: GoogleMap(
               onMapCreated: _onMapCreated,
               initialCameraPosition: CameraPosition(
                 target: _initialPosition ?? _defaultPosition,
@@ -322,19 +391,16 @@ class _SearchScreenState extends State<SearchScreen> {
               zoomGesturesEnabled: true,
             ),
           ),
-
-          //============================> Search Bar at the top <==========================
           Positioned(
-              top: 24.h,
-              left: 10.w,
-              right: 10.w,
-              child: CustomTextField(
-                controller: searchController,
-                prefixIcon: SvgPicture.asset(AppIcons.search),
-                labelText: 'Search'.tr,
-              )
+            top: 24.h,
+            left: 10.w,
+            right: 10.w,
+            child: CustomTextField(
+              controller: searchTextController,
+              prefixIcon: SvgPicture.asset(AppIcons.search),
+              labelText: 'Search'.tr,
+            ),
           ),
-          //=============================> Restaurant List at the bottom <=======================
           Positioned(
             bottom: 0,
             left: 0,
@@ -352,17 +418,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: SizedBox(
-                        width: 100.w,
-                        child: Divider(thickness: 3.5),
-                      ),
-                    ),
+                    Center(child: SizedBox(width: 100.w, child: Divider(thickness: 3.5))),
                     SizedBox(height: 24.h),
                     SizedBox(
                       height: 40.h,
                       child: ListView.builder(
-                       // shrinkWrap: true,
                         physics: const BouncingScrollPhysics(),
                         scrollDirection: Axis.horizontal,
                         itemCount: tabs.length,
@@ -372,132 +432,13 @@ class _SearchScreenState extends State<SearchScreen> {
                           return CustomTab(
                             icon: tab['icon'] as IconData,
                             label: tab['label'] as String,
-                            onTap: index == 0
-                                ? () {
-                              _showBottomSheet();
-                              print('First tab tapped!');
-                            }
-                                : null,
+                            onTap: index == 0 ? _showBottomSheet : null,
                           );
                         },
                       ),
                     ),
                     SizedBox(height: 24.h),
-                    //=================================> Restaurant list <========================
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: 4,
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: 12.h),
-                          child: GestureDetector(
-                            onTap: (){
-                              Get.toNamed(AppRoutes.detailsScreen);
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.fillColor,
-                                borderRadius: BorderRadius.circular(16.r),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(10.w),
-                                child: Row(
-                                  children: [
-                                    CustomNetworkImage(
-                                      imageUrl:
-                                      'https://plus.unsplash.com/premium_photo-1661883237884-263e8de8869b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVzdGF1cmFudHxlbnwwfHwwfHx8MA%3D%3D&fm=jpg&q=60&w=3000',
-                                      height: 64.h,
-                                      width: 64.w,
-                                      borderRadius: BorderRadius.circular(12.r),
-                                    ),
-                                    SizedBox(width: 12.w),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: CustomText(
-                                                  text: 'Motin Miar Pizza Ghar',
-                                                  fontSize: 20.sp,
-                                                  textAlign: TextAlign.start,
-                                                  maxLine: 2,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.star,
-                                                    color: Colors.yellow,
-                                                    size: 20,
-                                                  ),
-                                                  SizedBox(width: 5),
-                                                  CustomText(
-                                                    text: '4.9',
-                                                    color: AppColors.greyColor,
-                                                    fontSize: 16.sp,
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 4.h),
-                                          Row(
-                                            children: [
-                                              CustomText(
-                                                text: AppStrings.restaurants.tr,
-                                                fontSize: 16.sp,
-                                                color: AppColors.greyColor,
-                                              ),
-                                              Spacer(),
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.location_on_outlined,
-                                                    color: Colors.grey,
-                                                    size: 20,
-                                                  ),
-                                                  SizedBox(width: 5.w),
-                                                  CustomText(
-                                                    text: '0.5 km',
-                                                    color: AppColors.greyColor,
-                                                    fontSize: 16.sp,
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(width: 8.w),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.secondaryButtonColor,
-                                                  borderRadius: BorderRadius.circular(6.r),
-                                                ),
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 12.w,
-                                                    vertical: 4.h,
-                                                  ),
-                                                  child: CustomText(
-                                                    text: AppStrings.open.tr,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    _buildBusinessList(), // Dynamic restaurant list
                   ],
                 ),
               ),
@@ -507,7 +448,8 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-  //=======================================> Show Bottom Sheet <=============================
+
+  //======================== Bottom Sheet ========================
   void _showBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -519,26 +461,17 @@ class _SearchScreenState extends State<SearchScreen> {
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  height: 12.h,
-                  width: 48.w,
-                  child: Divider(thickness: 4.9, color: Colors.grey),
-                ),
+                SizedBox(height: 12.h, width: 48.w, child: Divider(thickness: 4.9, color: Colors.grey)),
                 SizedBox(height: 16.h),
-                CustomText(
-                  text: 'Sort By'.tr,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+                CustomText(text: 'Sort By'.tr, fontSize: 18.sp, fontWeight: FontWeight.w700),
                 SizedBox(height: 16.h),
                 ListView.builder(
                   shrinkWrap: true,
                   itemCount: options.length,
                   itemBuilder: (context, index) {
-                    return Obx(
-                          () => Container(
+                    return Obx(() {
+                      return Container(
                         margin: EdgeInsets.only(bottom: 8.h),
                         decoration: BoxDecoration(
                           color: AppColors.fillColor,
@@ -548,38 +481,23 @@ class _SearchScreenState extends State<SearchScreen> {
                           key: Key('$index-${options[index]}'),
                           activeColor: AppColors.primaryColor,
                           checkColor: Colors.white,
-                          side: BorderSide(
-                            color: AppColors.greyColor,
-                            width: 1.w,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          title: Align(
-                            alignment: Alignment.centerLeft,
-                            child: CustomText(text: options[index]),
-                          ),
-                          value:selectedOptions.contains(options[index].toLowerCase()),
+                          side: BorderSide(color: AppColors.greyColor, width: 1.w),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.r)),
+                          title: Align(alignment: Alignment.centerLeft, child: CustomText(text: options[index])),
+                          value: selectedOptions.contains(options[index].toLowerCase()),
                           onChanged: (bool? value) {
                             if (value == true) {
-                             selectedOptions.add(options[index].toLowerCase());
+                              selectedOptions.add(options[index].toLowerCase());
                             } else {
                               selectedOptions.remove(options[index].toLowerCase());
                             }
-                            print('==================> ${selectedOptions}');
                           },
                         ),
-                      ),
-                    );
+                      );
+                    });
                   },
                 ),
-                //==========================> Save Button <=============================
-                CustomButton(
-                  onTap: () {
-                    Get.back();
-                  },
-                  text: AppStrings.save.tr,
-                ),
+                CustomButton(onTap: () => Get.back(), text: AppStrings.save.tr),
                 SizedBox(height: 48.h),
               ],
             ),

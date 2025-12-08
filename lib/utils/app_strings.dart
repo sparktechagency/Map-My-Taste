@@ -72,6 +72,7 @@ class AppStrings {
   static String hotel = 'Hotel';
   static String thingsToDo = 'Things to do';
   static String open = 'Open';
+  static String close = 'Close';
   static String fastFood = 'Fast Food';
   static String hours = 'Hours';
   static String website = 'Website';
