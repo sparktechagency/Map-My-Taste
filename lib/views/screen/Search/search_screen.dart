@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
+import '../../../helpers/prefs_helpers.dart';
 import '../../../helpers/route.dart';
 import '../../../utils/app_icons.dart';
 import '../../../utils/app_images.dart';
@@ -15,6 +20,7 @@ import '../../base/custom_button.dart';
 import '../../base/custom_network_image.dart';
 import '../../base/custom_text.dart';
 import 'InnerWidget/custom_tab.dart';
+import 'package:http/http.dart' as http;
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -25,11 +31,15 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   TextEditingController searchController = TextEditingController();
-  late GoogleMapController _mapController;
+  GoogleMapController? _mapController;
+  bool _isMapReady = false;
   RxList<String> selectedOptions = <String>[].obs;
   final Set<Marker> _markers = {};
-  static const LatLng _initialPosition = LatLng(40.730610, -73.935242);
+  final LatLng _defaultPosition = const LatLng(40.730610, -73.935242);
+  LatLng? _initialPosition;
   bool isSwitched = false;
+
+  BitmapDescriptor? _restaurantIcon;
 
   final List<Map<String, dynamic>> tabs = [
     {'icon': Icons.sort, 'label': 'Sort'},
@@ -53,7 +63,28 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    _isMapReady = true;
+
+    if (_initialPosition != null) {
+      _moveCameraWithOffset(_initialPosition!);
+    } else {
+      _moveCameraWithOffset(_defaultPosition);
+    }
   }
+
+
+
+  void _moveCameraWithOffset(LatLng position) {
+    if (!_isMapReady || _mapController == null) return;
+
+    double offset = 0.04;
+    LatLng target = LatLng(position.latitude - offset, position.longitude);
+
+    _mapController!.animateCamera(CameraUpdate.newLatLng(target));
+  }
+
+
+
 
   void _onMapTapped(LatLng tappedPoint) {
     setState(() {
@@ -64,7 +95,95 @@ class _SearchScreenState extends State<SearchScreen> {
         infoWindow: const InfoWindow(title: 'Selected Location'),
       ));
     });
-    _mapController.animateCamera(CameraUpdate.newLatLng(tappedPoint));
+    _mapController?.animateCamera(CameraUpdate.newLatLng(tappedPoint));
+  }
+
+
+  // Function to convert a Flutter IconData into a BitmapDescriptor
+  Future<BitmapDescriptor> getBitmapDescriptorFromIcon(
+      IconData iconData, Color color, double size) async {
+
+    // 1. Create a Picture Recorder and Canvas
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    // 2. Define the icon painter and text style
+    final TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
+    final String iconText = String.fromCharCode(iconData.codePoint);
+
+    // Use the default Icon font and style it with color and size
+    textPainter.text = TextSpan(
+        text: iconText,
+        style: TextStyle(
+            letterSpacing: 0.0,
+            fontSize: size,
+            fontFamily: iconData.fontFamily,
+            color: color));
+
+    // 3. Draw the icon onto the canvas
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(0.0, 0.0));
+
+    // 4. Convert the Canvas drawing (Picture) to an Image
+    final ui.Image image = await pictureRecorder
+        .endRecording()
+        .toImage(textPainter.width.toInt(), textPainter.height.toInt());
+
+    // 5. Convert the Image to PNG ByteData
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+
+    // 6. Return the BitmapDescriptor
+    final Uint8List bytes = byteData!.buffer.asUint8List();
+    return BitmapDescriptor.fromBytes(bytes);
+  }
+
+
+  // ========================= GOOGLE PLACES NEARBY API =========================
+
+  Future<void> _loadNearbyRestaurants(LatLng location) async {
+    final String url =
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+        "?location=${location.latitude},${location.longitude}"
+        "&radius=1500"
+        "&type=restaurant"
+        "&key=AIzaSyBCfToXEXCt9L36Zri1FjoI9kMv_E076no"; // USE Manifest API key here
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final data = jsonDecode(response.body);
+      log("=====> ${data}");
+
+      if (data["status"] == "OK") {
+        List results = data["results"];
+
+        // Clear existing markers, but you may want to keep the initial position marker
+        // If you clear here, make sure to re-add the 'saved_location' marker if needed
+        // For simplicity, we'll assume we're just adding to what's already there
+        // _markers.clear(); // Removing this line for now to keep the saved location marker
+
+        for (var r in results) {
+          final lat = r["geometry"]["location"]["lat"];
+          final lng = r["geometry"]["location"]["lng"];
+          final name = r["name"];
+
+          _markers.add(
+            Marker(
+              markerId: MarkerId(name),
+              position: LatLng(lat, lng),
+              infoWindow: InfoWindow(title: name),
+              // 2. Use the custom icon here
+              icon: _restaurantIcon ?? BitmapDescriptor.defaultMarker,
+            ),
+          );
+        }
+
+        setState(() {});
+      } else {
+        print("Places API Error: ${data["status"]}");
+      }
+    } catch (e) {
+      print("Nearby API Error: $e");
+    }
   }
 
   //=========================> Search location and update map with marker <=======================
@@ -74,7 +193,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (locations.isNotEmpty) {
         final LatLng newPosition =
         LatLng(locations.first.latitude, locations.first.longitude);
-        _mapController.animateCamera(CameraUpdate.newLatLng(newPosition));
+     //  _mapController.animateCamera(CameraUpdate.newLatLng(newPosition));
         setState(() {
           _markers.clear();
           _markers.add(Marker(
@@ -86,9 +205,67 @@ class _SearchScreenState extends State<SearchScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: CustomText(text: 'Location not found')));
+          const SnackBar(content: Text('Location not found')));
     }
   }
+
+
+  Future<void> _loadCustomIcon() async {
+    try {
+      _restaurantIcon = await getBitmapDescriptorFromIcon(
+        Icons.restaurant, // Use the direct Flutter Icon
+        Colors.pink,       // Choose your icon color
+        50,             // Choose your icon size (e.g., 80.0)
+      );
+    } catch (e) {
+      print("Error loading built-in icon as marker: $e");
+      _restaurantIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomIcon().then((_) { // Load icon first
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadSavedLocation();
+      });
+    });
+  }
+
+  void _loadSavedLocation() async {
+    String? latStr = await PrefsHelper.getString('latitude');
+    String? lonStr = await PrefsHelper.getString('longitude');
+
+    LatLng newPosition;
+
+    if (latStr.isNotEmpty && lonStr.isNotEmpty) {
+      double lat = double.tryParse(latStr) ?? _defaultPosition.latitude;
+      double lon = double.tryParse(lonStr) ?? _defaultPosition.longitude;
+      newPosition = LatLng(lat, lon);
+    } else {
+      newPosition = _defaultPosition;
+    }
+
+    // Save to _initialPosition
+    setState(() {
+      _initialPosition = newPosition;
+
+      // Add marker at saved location
+      _markers.clear();
+      _markers.add(Marker(
+        markerId: const MarkerId('saved_location'),
+        position: _initialPosition!,
+        infoWindow: const InfoWindow(title: 'Current Location'),
+      ));
+    });
+
+    // Animate camera if map is ready
+    _moveCameraWithOffset(_initialPosition!);
+
+    _loadNearbyRestaurants(_initialPosition!);
+    }
+
 
 
   @override
@@ -130,18 +307,22 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: GoogleMap(
+            child:
+            GoogleMap(
               onMapCreated: _onMapCreated,
-              initialCameraPosition: const CameraPosition(
-                target: _initialPosition,
+              initialCameraPosition: CameraPosition(
+                target: _initialPosition ?? _defaultPosition,
                 zoom: 12.0,
               ),
+              mapType: MapType.satellite,
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
               markers: _markers,
               onTap: _onMapTapped,
+              zoomGesturesEnabled: true,
             ),
           ),
+
           //============================> Search Bar at the top <==========================
           Positioned(
               top: 24.h,
