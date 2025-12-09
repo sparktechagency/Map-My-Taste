@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
+import '../../../controllers/category_list_controller.dart';
 import '../../../controllers/search_controller.dart';
 import '../../../helpers/prefs_helpers.dart';
 import '../../../helpers/route.dart';
@@ -33,6 +34,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final BusinessSearchController searchController = Get.put(BusinessSearchController());
   TextEditingController searchTextController = TextEditingController();
+  final CategoryController categoryController = Get.put(CategoryController());
   GoogleMapController? _mapController;
   bool _isMapReady = false;
   RxList<String> selectedOptions = <String>[].obs;
@@ -42,16 +44,12 @@ class _SearchScreenState extends State<SearchScreen> {
   bool isSwitched = false;
   BitmapDescriptor? _restaurantIcon;
 
-  final List<Map<String, dynamic>> tabs = [
+  final List<Map<String, dynamic>> staticTabs = [
     {'icon': Icons.sort, 'label': 'Sort'},
-    {'icon': Icons.restaurant, 'label': 'Restaurants'},
-    {'icon': Icons.hotel, 'label': 'Hotel'},
-    {'icon': Icons.camera_alt, 'label': 'Things'},
-    {'icon': Icons.museum, 'label': 'Museums'},
-    {'icon': Icons.medical_information, 'label': 'Pharmacies'},
-    {'icon': Icons.forest, 'label': 'Parks'},
-    {'icon': Icons.local_hospital, 'label': 'Hospital'},
   ];
+
+  RxList<Map<String, dynamic>> tabs = <Map<String, dynamic>>[].obs;
+
 
   final List<String> options = [
     'Distance  (Default)'.tr,
@@ -77,6 +75,18 @@ class _SearchScreenState extends State<SearchScreen> {
       if (keyword.isNotEmpty) {
         searchController.search(keyword);
       }
+    });
+
+
+    ever(categoryController.categories, (_) {
+      final dynamicTabs = categoryController.categories.map((c) {
+        return {
+          'icon': c.icon, // String emoji from API, can be null
+          'label': c.displayName
+        };
+      }).toList();
+
+      tabs.value = [...staticTabs, ...dynamicTabs];
     });
   }
 
@@ -162,11 +172,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
       if (data["status"] == "OK") {
         List results = data["results"];
-
-        // Clear existing markers, but you may want to keep the initial position marker
-        // If you clear here, make sure to re-add the 'saved_location' marker if needed
-        // For simplicity, we'll assume we're just adding to what's already there
-        // _markers.clear(); // Removing this line for now to keep the saved location marker
 
         for (var r in results) {
           final lat = r["geometry"]["location"]["lat"];
@@ -425,21 +430,23 @@ class _SearchScreenState extends State<SearchScreen> {
                     SizedBox(height: 24.h),
                     SizedBox(
                       height: 40.h,
-                      child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: tabs.length,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemBuilder: (context, index) {
-                          final tab = tabs[index];
-                          return CustomTab(
-                            icon: tab['icon'] as IconData,
-                            label: tab['label'] as String,
-                            onTap: index == 0 ? _showBottomSheet : null,
-                          );
-                        },
-                      ),
+                      child: Obx(() {
+                        return ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: tabs.length,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemBuilder: (context, index) {
+                            final tab = tabs[index];
+                            return CustomTab(
+                              label: tab['label'] as String,
+                              onTap: index == 0 ? _showBottomSheet : null,
+                            );
+                          },
+                        );
+                      }),
                     ),
+
                     SizedBox(height: 24.h),
                     _buildBusinessList(), // Dynamic restaurant list
                   ],

@@ -3,19 +3,27 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 
 class CustomTab extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String label;
   final VoidCallback? onTap;
 
   const CustomTab({
     super.key,
-    required this.icon,
+    this.icon,
     required this.label,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget? iconWidget;
+
+    if (icon is IconData) {
+      iconWidget = Icon(icon, color: Colors.white, size: 18);
+    } else if (icon is String) {
+      iconWidget = Text(icon, style: const TextStyle(fontSize: 18));
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -25,17 +33,22 @@ class CustomTab extends StatelessWidget {
           color: AppColors.fillColor,
           borderRadius: BorderRadius.circular(8.r),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Center(
+              child: Text(
+                label.trim().replaceAll(RegExp(r'\s+'), ' '),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            if (iconWidget != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: iconWidget,
+              ),
           ],
         ),
       ),

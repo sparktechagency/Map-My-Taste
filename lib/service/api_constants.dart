@@ -20,6 +20,7 @@ class ApiConstants {
 //=============================> Business / Search <=============================
   static const String searchNearbyBusinessesEndPoint = "/businesses/search/nearby";
   static const String getBusinessDetails = "/businesses/";
+  static const String getCategoryList = "/businesses/categories/all";
 
   static const String termsConditionEndPoint = "";
   static const String privacyPolicyEndPoint = "";
