@@ -29,6 +29,9 @@ class BusinessSearchController extends GetxController {
     bool? openNow,
     String? category,
     bool? isVerified,
+    String? sort,
+
+
   }) async {
     if (latitude == null || longitude == null) {
       errorMessage.value = 'Latitude and Longitude are required';
@@ -57,6 +60,8 @@ class BusinessSearchController extends GetxController {
       if (category != null) queryParams['category'] = category;
       if (isVerified != null) queryParams['isVerified'] = isVerified.toString();
 
+      // ⭐ Add Sorting Parameter
+      if (sort != null) queryParams['sort'] = sort;
       // =================== ApiClient Call ===================
       final response = await ApiClient.getData(
         '/businesses/search/nearby',

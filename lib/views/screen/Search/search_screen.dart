@@ -43,6 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
   LatLng? _initialPosition;
   bool isSwitched = false;
   BitmapDescriptor? _restaurantIcon;
+  RxString selectedOption = ''.obs;
 
   final List<Map<String, dynamic>> staticTabs = [
     {'icon': Icons.sort, 'label': 'Sort'},
@@ -52,13 +53,32 @@ class _SearchScreenState extends State<SearchScreen> {
 
 
   final List<String> options = [
-    'Distance  (Default)'.tr,
     'Most popular'.tr,
     'Highest rating'.tr,
     'A→Z'.tr,
     '\$→\$\$\$'.tr,
     '\$\$\$→\$'.tr,
   ];
+
+
+
+  String? getSortParam(String selected) {
+    switch (selected) {
+      case 'most popular':
+        return 'reviews'; // /sort=reviews
+      case 'highest rating':
+        return 'rating'; // /sort=rating
+      case 'a→z':
+        return 'name'; // /sort=name
+      case '\$→\$\$\$':
+        return '\$\$\$'; // priceRange=$$$ and sort not used
+      case '\$\$\$→\$':
+        return '\$'; // priceRange=$
+      default:
+        return null;
+    }
+  }
+
 
   @override
   void initState() {
@@ -480,6 +500,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   shrinkWrap: true,
                   itemCount: options.length,
                   itemBuilder: (context, index) {
+                    final option = options[index];
+
                     return Obx(() {
                       return Container(
                         margin: EdgeInsets.only(bottom: 8.h),
@@ -488,18 +510,24 @@ class _SearchScreenState extends State<SearchScreen> {
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: CheckboxListTile(
-                          key: Key('$index-${options[index]}'),
+                          key: Key('$index-$option'),
                           activeColor: AppColors.primaryColor,
                           checkColor: Colors.white,
                           side: BorderSide(color: AppColors.greyColor, width: 1.w),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.r)),
-                          title: Align(alignment: Alignment.centerLeft, child: CustomText(text: options[index])),
-                          value: selectedOptions.contains(options[index].toLowerCase()),
+                          title: Align(
+                            alignment: Alignment.centerLeft,
+                            child: CustomText(text: option),
+                          ),
+
+                          // ✔ Only one selected at a time
+                          value: selectedOption.value == option.toLowerCase(),
+
                           onChanged: (bool? value) {
                             if (value == true) {
-                              selectedOptions.add(options[index].toLowerCase());
+                              selectedOption.value = option.toLowerCase();
                             } else {
-                              selectedOptions.remove(options[index].toLowerCase());
+                              selectedOption.value = '';
                             }
                           },
                         ),
@@ -507,7 +535,42 @@ class _SearchScreenState extends State<SearchScreen> {
                     });
                   },
                 ),
-                CustomButton(onTap: () => Get.back(), text: AppStrings.save.tr),
+
+                CustomButton(
+                  onTap: () {
+                    final selected = selectedOption.value;
+
+                    final sort = getSortParam(selected);
+
+                    // If price range selected:
+                    if (selected == '\$→\$\$\$') {
+                      searchController.fetchNearbyBusinesses(
+                        latitude: searchController.currentPosition.value?.latitude,
+                        longitude: searchController.currentPosition.value?.longitude,
+                        priceRange: '\$\$\$',
+                      );
+                    }
+                    else if (selected == '\$\$\$→\$') {
+                      searchController.fetchNearbyBusinesses(
+                        latitude: searchController.currentPosition.value?.latitude,
+                        longitude: searchController.currentPosition.value?.longitude,
+                        priceRange: '\$',
+                      );
+                    }
+                    else {
+                      // Sorting options (reviews, rating, name)
+                      searchController.fetchNearbyBusinesses(
+                        latitude: searchController.currentPosition.value?.latitude,
+                        longitude: searchController.currentPosition.value?.longitude,
+                        sort: sort,
+                      );
+                    }
+
+                    Get.back();
+                  },
+                  text: AppStrings.save.tr,
+                ),
+
                 SizedBox(height: 48.h),
               ],
             ),
