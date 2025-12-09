@@ -19,9 +19,9 @@ class BusinessSearchController extends GetxController {
     required double? latitude,
     required double? longitude,
     String? keyword,
-    int page = 1,
-    int limit = 20,
-    double radius = 1,
+    int? page,
+    int? limit,
+    double? radius,
     String? cuisineType,
     String? priceRange,
     bool? hasParking,
@@ -38,15 +38,16 @@ class BusinessSearchController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
 
+
     try {
       Map<String, String> queryParams = {
         'latitude': latitude.toString(),
         'longitude': longitude.toString(),
-        'page': page.toString(),
-        'limit': limit.toString(),
-        'radius': radius.toString(),
       };
 
+      if (page != null) queryParams['page'] = page.toString();
+      if (limit != null) queryParams['limit'] = limit.toString();
+      if (radius != null) queryParams['radius'] = radius.toString();
       if (keyword != null && keyword.isNotEmpty) queryParams['search'] = keyword;
       if (cuisineType != null) queryParams['cuisineType'] = cuisineType;
       if (priceRange != null) queryParams['priceRange'] = priceRange;

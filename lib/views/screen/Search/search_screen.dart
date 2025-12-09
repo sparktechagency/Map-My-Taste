@@ -255,7 +255,10 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: EdgeInsets.only(bottom: 12.h),
               child: GestureDetector(
                 onTap: () {
-                  Get.toNamed(AppRoutes.detailsScreen, arguments: business);
+                  Get.toNamed(AppRoutes.detailsScreen,   arguments: {
+                    'id': business.id,
+                    'distance': business.distance,       // new value
+                  },);
                 },
                 child: Container(
                   decoration: BoxDecoration(

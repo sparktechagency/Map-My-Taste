@@ -70,7 +70,7 @@ class AppRoutes{
     GetPage(name:notificationsScreen, page: ()=> NotificationsScreen()),
     GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
     GetPage(name:searchScreen, page: ()=> SearchScreen(),transition:Transition.noTransition),
-   GetPage(name:detailsScreen, page: ()=>const DetailsScreen()),
+   GetPage(name:detailsScreen, page: ()=> DetailsScreen()),
    GetPage(name:reviewsScreen, page: ()=>const ReviewsScreen()),
    GetPage(name:favoritesScreen, page: ()=> FavoritesScreen(),transition:Transition.noTransition),
     GetPage(name:exploreScreen, page: ()=>const ExploreScreen(),transition:Transition.noTransition),
