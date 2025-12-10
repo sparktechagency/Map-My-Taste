@@ -294,16 +294,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           // ==========================================================
                           // >> FIX: Use PostFrameCallback to ensure Overlay is ready <<
                           // ==========================================================
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            Get.rawSnackbar(
-                              message: result["message"] as String? ?? "Review submitted successfully!",
-                              backgroundColor: Colors.green,
-                              duration: const Duration(seconds: 2),
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
-                          });
+                          if (mounted) { // Add mounted check for extra safety, though PostFrameCallback implies it should be
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              Get.rawSnackbar(
+                                message: result["message"] as String? ?? "Review submitted successfully!",
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 2),
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                            });
+                          }
                         }
                       },
+
                       text: "Write A Review",
                     ),
                     SizedBox(height: 16.h),
@@ -359,13 +362,29 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
+// Inside _DetailsScreenState in details_screen.dart
+
   void _toggleFavorite(String businessId) async {
+    // Prevent multiple rapid taps
     if (favouriteController.isLoading.value) return;
 
+    // 1. Await the API call to toggle favorite status
     await favouriteController.addToFavourite(businessId);
 
+    // ⭐️ CRITICAL FIX: Ensure the widget is still in the tree (mounted)
+    // before performing any UI updates (setState, Get.rawSnackbar).
+    if (!mounted) {
+      // If the widget is no longer in the widget tree, stop execution
+      // to prevent calling UI methods on a stale context.
+      return;
+    }
+
+    // 2. Process API Response
     if (favouriteController.addFavouriteResponse.value.success == true) {
       // Success: update UI and show snackbar
+
+      // 💡 Note: If _isFavorite is an RxBool in the controller,
+      // you might not need setState here, but if it's local state, keep it.
       setState(() {
         _isFavorite = true;
       });
@@ -378,6 +397,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       );
     } else {
       // Failure: show error message
+
       Get.rawSnackbar(
         message: favouriteController.errorMessage.value.isNotEmpty
             ? favouriteController.errorMessage.value
@@ -388,7 +408,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       );
     }
   }
-
 
 
 }

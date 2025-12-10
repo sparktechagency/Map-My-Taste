@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -31,6 +33,17 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     {'icon': Icons.bakery_dining, 'label': 'Bakery', 'type': 'bakery'},
     {'icon': Icons.bar_chart, 'label': 'Bar', 'type': 'bar'},
   ];
+
+
+  String? _getCategoryType(String? label) {
+    if (label == null) return null;
+    try {
+      return staticCategories
+          .firstWhere((e) => e['label'] == label)['type'] as String;
+    } catch (e) {
+      return null; // Handle case where label is not found
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,13 +150,23 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 //====================> Apply Filter Button <=====================
                 CustomButton(
                   onTap: () {
+                    // CRITICAL: Check if the validation is failing and preventing Get.back()
+                    // If you have no validators, this should always be true.
                     if (_formKey.currentState!.validate()) {
+
+                      final categoryType = _getCategoryType(selectedCategory);
+
+                      // ⭐️ DEBUG STEP: Log value before closing sheet ⭐️
+                      log('Filter Sheet: Closing with category: $categoryType');
+
                       Get.back(result: {
-                        'category': selectedCategory,
+                        'category': categoryType, // This can be null if nothing was selected
                         'minRating': minRating,
                         'openNow': isOpenNow,
                         'isVerified': isVerified,
                       });
+                    } else {
+                      log('Filter Sheet: Form validation failed!'); // Check if this logs
                     }
                   },
                   text: 'Apply Filter'.tr,

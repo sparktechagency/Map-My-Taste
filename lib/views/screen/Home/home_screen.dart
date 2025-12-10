@@ -210,49 +210,86 @@ class _HomeScreenState extends State<HomeScreen> {
                       prefixIcon: SvgPicture.asset(AppIcons.search),
                     ),
                   ),
-          InkWell(
-            onTap: () async {
-              final result = await showModalBottomSheet<Map<String, dynamic>>(
-                isScrollControlled: true,
-                context: context,
-                builder: (BuildContext context) {
-                  return FilterBottomSheet();
-                },
-              );
 
-              if (result != null) {
-                final lat = controller.currentPosition.value?.latitude;
-                final lon = controller.currentPosition.value?.longitude;
 
-                if (lat == null || lon == null) {
-                  // Optionally fetch location here or show a warning
-                  Get.snackbar('Location Required', 'Please enable location first');
-                  return;
-                }
+                  // Inside _HomeScreenState.build, in the InkWell for the filter icon:
 
-                log('--- Fetch Nearby Businesses with Filters ---');
-                log({
-                  'latitude': lat,
-                  'longitude': lon,
-                  'category': result['category'],
-                  'openNow': result['openNow'],
-                  'isVerified': result['isVerified'],
-                  'minRating': result['minRating'],
-                }.toString());
+                  // Inside _HomeScreenState.build, in the InkWell for the filter icon:
 
-                // Call API
-                await controller.fetchNearbyBusinesses(
-                  latitude: lat,
-                  longitude: lon,
-                  category: result['category'],
-                  openNow: result['openNow'],
-                  isVerified: result['isVerified'],
-                  minRating: result['minRating'], // if API supports it
-                );
-              }
-            },
-            child: SvgPicture.asset(AppIcons.filter),
-          ),
+                  // Inside _HomeScreenState.build, in the InkWell for the filter icon:
+
+                  InkWell(
+                    onTap: () async {
+                      // 1. Show the bottom sheet and await the result.
+                      final result = await showModalBottomSheet<Map<String, dynamic>>(
+                        isScrollControlled: true,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return FilterBottomSheet();
+                        },
+                      );
+
+                      // 2. CRITICAL FIX: Screen/Context Safety Check
+                      if (!mounted) {
+                        log('HomeScreen disposed during filter flow. Exiting onTap.');
+                        return;
+                      }
+
+                      if (result != null) {
+                        // ⭐️ FIX: Read Latitude/Longitude directly from PrefsHelper ⭐️
+                        // This mirrors the logic in _handleFirstTimeLocation for persisted data.
+                        String? latString = await PrefsHelper.getString('latitude');
+                        String? lonString = await PrefsHelper.getString('longitude');
+
+                        final double? lat = double.tryParse(latString ?? '');
+                        final double? lon = double.tryParse(lonString ?? '');
+
+                        // ⭐️ DEBUG 1: Check the raw result and location ⭐️
+                        log('Filter sheet returned result: $result');
+                        log('Current Position from Prefs: lat=$lat, lon=$lon');
+
+                        // Check for missing location data
+                        if (lat == null || lon == null) {
+                          log('Location data missing or invalid in storage. Cannot filter by nearby location. Exiting.');
+                          return;
+                        }
+
+                        // ⭐️ EXTREME FIX: Dispatch the API call outside of the current frame ⭐️
+                        Future.microtask(() async {
+                          if (!mounted) {
+                            log('Microtask skipped: HomeScreen disposed while pending.');
+                            return;
+                          }
+
+                          // Extract values with explicit type casting and null handling
+                          final String? category = result['category'] as String?;
+                          final double? minRating = result['minRating'] as double?;
+                          final bool? openNow = result['openNow'] as bool?;
+                          final bool? isVerified = result['isVerified'] as bool?;
+
+                          // ⭐️ DEBUG 2: Check final values sent to API ⭐️
+                          log('--- Dispatching fetchNearbyBusinesses with Filters ---');
+                          log('Category: $category, MinRating: $minRating, OpenNow: $openNow, Verified: $isVerified');
+
+                          // 3. Call the API asynchronously
+                          await controller.fetchNearbyBusinesses(
+                            latitude: lat, // Now reliably parsed from storage
+                            longitude: lon, // Now reliably parsed from storage
+                            category: category,
+                            openNow: openNow,
+                            isVerified: isVerified,
+                            minRating: minRating,
+                          );
+                        });
+
+                        // 4. Immediately return from the onTap function.
+                        return;
+                      } else {
+                        log('Filter sheet dismissed without applying filters (result was null).');
+                      }
+                    },
+                    child: SvgPicture.asset(AppIcons.filter),
+                  )
 
 
 
