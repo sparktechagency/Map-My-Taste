@@ -73,17 +73,19 @@ class _PostCardState extends State<PostCard> {
                       children: [
                         Row(
                           children: [
-                            CustomText(
-                              text: business?.name ?? '',
-                              fontSize: 20.sp,
-                              maxLine: 2,
-                              fontWeight: FontWeight.w700,
+                            Flexible(
+                              child: CustomText(
+                                text: business?.name ?? '',
+                                fontSize: 18.sp,
+                                textOverflow: TextOverflow.ellipsis,
+                                maxLine: 5,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                            Spacer(),
+                            SizedBox(width: 8.w),
                             Row(
                               children: [
-                                Icon(Icons.star,
-                                    color: Colors.yellow, size: 20),
+                                Icon(Icons.star, color: Colors.yellow, size: 20),
                                 SizedBox(width: 5),
                                 CustomText(
                                   text: business?.rating?.toString() ?? "0",
@@ -94,6 +96,7 @@ class _PostCardState extends State<PostCard> {
                             ),
                           ],
                         ),
+
 
                         Row(
                           children: [
