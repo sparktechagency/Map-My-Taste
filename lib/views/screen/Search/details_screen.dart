@@ -11,6 +11,7 @@ import 'package:map_my_taste/views/base/custom_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../controllers/business_details_controller.dart';
+import '../../../controllers/favourite_controller.dart';
 
 class DetailsScreen extends StatefulWidget {
   const DetailsScreen({super.key});
@@ -23,6 +24,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
   final controller = Get.put(BusinessDetailsController());
   bool _isFavorite = false;
   double? distance;
+  final favouriteController = Get.put(FavouriteController());
+
 
   @override
   void initState() {
@@ -45,12 +48,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
   }
 
-
-  void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,17 +112,35 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           ),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        IconButton(
-                          icon: Icon(
-                            _isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: AppColors.primaryColor,
-                            size: 28.w,
-                          ),
-                          onPressed: _toggleFavorite,
-                        ),
+
+                        // ⭐ FAVORITE BUTTON ⭐
+                        Obx(() {
+                          return IconButton(
+                            icon: favouriteController.isLoading.value
+                                ? SizedBox(
+                              width: 24.w,
+                              height: 24.w,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primaryColor,
+                              ),
+                            )
+                                : Icon(
+                              _isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: AppColors.primaryColor,
+                              size: 28.w,
+                            ),
+
+                            onPressed: () {
+                              // Call your toggle function with business ID
+                              _toggleFavorite(data.id ?? '');
+                            },
+                          );
+                        }),
                       ],
                     ),
                   ),
+
                   // Category Icon
                   Positioned(
                     bottom: -40,
@@ -344,6 +359,35 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
+  void _toggleFavorite(String businessId) async {
+    if (favouriteController.isLoading.value) return;
+
+    await favouriteController.addToFavourite(businessId);
+
+    if (favouriteController.addFavouriteResponse.value.success == true) {
+      // Success: update UI and show snackbar
+      setState(() {
+        _isFavorite = true;
+      });
+
+      Get.rawSnackbar(
+        message: favouriteController.addFavouriteResponse.value.message ?? "Added to favorites",
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      // Failure: show error message
+      Get.rawSnackbar(
+        message: favouriteController.errorMessage.value.isNotEmpty
+            ? favouriteController.errorMessage.value
+            : "Failed to add favorite",
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 
 
 

@@ -25,7 +25,9 @@ class ApiConstants {
 
   //=============================> Reviews <=============================
   static const String postUserReview = "/reviews";
-
+  static const String postFavorites = "/favorites";
+  static const String getFavorites = "/favorites";
+  static const String deleteFavorites = "/favorites/";
 
   static const String termsConditionEndPoint = "";
   static const String privacyPolicyEndPoint = "";
