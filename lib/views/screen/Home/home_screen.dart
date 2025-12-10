@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -208,20 +210,53 @@ class _HomeScreenState extends State<HomeScreen> {
                       prefixIcon: SvgPicture.asset(AppIcons.search),
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (BuildContext context) {
-                          return FilterBottomSheet();
-                        },
-                      );
+          InkWell(
+            onTap: () async {
+              final result = await showModalBottomSheet<Map<String, dynamic>>(
+                isScrollControlled: true,
+                context: context,
+                builder: (BuildContext context) {
+                  return FilterBottomSheet();
+                },
+              );
 
-                    },
-                    child: SvgPicture.asset(AppIcons.filter),
-                  ),
-                ],
+              if (result != null) {
+                final lat = controller.currentPosition.value?.latitude;
+                final lon = controller.currentPosition.value?.longitude;
+
+                if (lat == null || lon == null) {
+                  // Optionally fetch location here or show a warning
+                  Get.snackbar('Location Required', 'Please enable location first');
+                  return;
+                }
+
+                log('--- Fetch Nearby Businesses with Filters ---');
+                log({
+                  'latitude': lat,
+                  'longitude': lon,
+                  'category': result['category'],
+                  'openNow': result['openNow'],
+                  'isVerified': result['isVerified'],
+                  'minRating': result['minRating'],
+                }.toString());
+
+                // Call API
+                await controller.fetchNearbyBusinesses(
+                  latitude: lat,
+                  longitude: lon,
+                  category: result['category'],
+                  openNow: result['openNow'],
+                  isVerified: result['isVerified'],
+                  minRating: result['minRating'], // if API supports it
+                );
+              }
+            },
+            child: SvgPicture.asset(AppIcons.filter),
+          ),
+
+
+
+          ],
               ),
               //=======================================> Post Card Section <===================================
               // Post Cards

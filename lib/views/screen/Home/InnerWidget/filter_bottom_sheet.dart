@@ -15,24 +15,21 @@ class FilterBottomSheet extends StatefulWidget {
 
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  double _maxDistance = 36;
-  double _maxRating = 1;
-  double _minPrice = 500;
-  double _maxPrice = 2500;
-  String? selectedGender;
-  String? selectedMatch;
-  bool isSwitched = false;
 
-  final List<String> genderOptions = [
-    'Restaurants',
-    'Hotel',
-    'Things',
-    'Museums',
-    'Pharmacies',
-    'Parks',
-    'Hospital',
-    'Juice Bar',
-    'Spa',
+  // Selected filters
+  String? selectedCategory;
+  bool isOpenNow = false;
+  bool isVerified = false;
+  double minRating = 0;
+
+  // Static categories
+  final List<Map<String, dynamic>> staticCategories = [
+    {'icon': Icons.restaurant, 'label': 'Restaurant', 'type': 'restaurant'},
+    {'icon': Icons.hotel, 'label': 'Hotel', 'type': 'hotel'},
+    {'icon': Icons.church, 'label': 'Church', 'type': 'church'},
+    {'icon': Icons.local_cafe, 'label': 'Cafe', 'type': 'cafe'},
+    {'icon': Icons.bakery_dining, 'label': 'Bakery', 'type': 'bakery'},
+    {'icon': Icons.bar_chart, 'label': 'Bar', 'type': 'bar'},
   ];
 
   @override
@@ -64,9 +61,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                       bottom: 16.h,
                     ),
                     InkWell(
-                      onTap: () {
-                        Get.back();
-                      },
+                      onTap: () => Get.back(),
                       child: Icon(
                         Icons.cancel_outlined,
                         color: AppColors.greyColor,
@@ -75,148 +70,81 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     ),
                   ],
                 ),
+                SizedBox(height: 16.h),
+
                 //=======================> Category Dropdown <==================
                 CustomText(
                   text: 'Category'.tr,
                   fontWeight: FontWeight.w700,
-                  fontSize: 18.sp,
-                  bottom: 8.h,
-                ),
-                _dropdownField(genderOptions, selectedGender, (value) {
-                  setState(() {
-                    selectedGender = value;
-                  });
-                }, 'Category'.tr),
-                SizedBox(height: 16.h),
-                //=======================> Distance Slider <==================
-                CustomText(
-                  text: 'Distance'.tr,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16.sp,
-                  bottom: 12.h,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _distanceSlider(),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Total Distance'.tr,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
-                              color: AppColors.primaryColor,
-                              width: 1.w,
-                            ),
-                          ),
-                          child: Text(
-                            _maxDistance.toStringAsFixed(0),
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: AppColors.primaryColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 24.h),
-                //=======================> Age Range Slider <==================
-                CustomText(
-                  text: 'Price Range'.tr,
-                  fontWeight: FontWeight.w600,
                   fontSize: 16.sp,
                   bottom: 8.h,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _priceSlider(),
-                    _rangeLabels('Minimum', _minPrice, 'Maximum', _maxPrice),
-                  ],
+                _dropdownField(
+                  staticCategories.map((e) => e['label'].toString()).toList(),
+                  selectedCategory,
+                      (value) => setState(() => selectedCategory = value),
+                  'Select Category'.tr,
                 ),
                 SizedBox(height: 24.h),
+
                 //=======================> Minimum Rating Slider <==================
                 CustomText(
                   text: 'Minimum Rating'.tr,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   fontSize: 16.sp,
-                  bottom: 12.h,
+                  bottom: 8.h,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ratingSlider(),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Total Rating'.tr,
-                          style: TextStyle(fontSize: 12.sp),
-                        ),
-                        SizedBox(height: 4.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
-                              color: AppColors.primaryColor,
-                              width: 1.w,
-                            ),
-                          ),
-                          child: Text(
-                            _maxRating.toStringAsFixed(0),
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: AppColors.primaryColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                Slider(
+                  value: minRating,
+                  min: 0,
+                  max: 5,
+                  divisions: 5,
+                  label: minRating.toStringAsFixed(1),
+                  activeColor: AppColors.primaryColor,
+                  inactiveColor: AppColors.greyColor,
+                  onChanged: (value) {
+                    setState(() => minRating = value);
+                  },
                 ),
-                SizedBox(height: 24.h),
-                //=======================> Open Now Row <==================
+                SizedBox(height: 16.h),
+
+                //=======================> Open Now Switch <==================
                 CustomListTile(
                   title: 'Open Now'.tr,
                   suffixIcon: Switch(
-                    padding: EdgeInsets.zero,
-                    value: isSwitched,
-                    onChanged: (value) {
-                      setState(() {
-                        isSwitched = value;
-                      });
-                    },
+                    value: isOpenNow,
+                    onChanged: (value) => setState(() => isOpenNow = value),
+                    activeColor: AppColors.primaryColor,
+                    inactiveThumbColor: AppColors.greyColor,
+                    inactiveTrackColor: AppColors.fillColor,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+
+                //=======================> Is Verified Switch <==================
+                CustomListTile(
+                  title: 'Verified'.tr,
+                  suffixIcon: Switch(
+                    value: isVerified,
+                    onChanged: (value) => setState(() => isVerified = value),
                     activeColor: AppColors.primaryColor,
                     inactiveThumbColor: AppColors.greyColor,
                     inactiveTrackColor: AppColors.fillColor,
                   ),
                 ),
                 SizedBox(height: 24.h),
+
                 //====================> Apply Filter Button <=====================
                 CustomButton(
                   onTap: () {
-                    if (_formKey.currentState!.validate()) {}
+                    if (_formKey.currentState!.validate()) {
+                      Get.back(result: {
+                        'category': selectedCategory,
+                        'minRating': minRating,
+                        'openNow': isOpenNow,
+                        'isVerified': isVerified,
+                      });
+                    }
                   },
                   text: 'Apply Filter'.tr,
                 ),
@@ -229,131 +157,29 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  //============================> Distance Slider <===============================
-  Widget _distanceSlider() {
-    return Slider(
-      activeColor: AppColors.primaryColor,
-      inactiveColor: AppColors.greyColor,
-      value: _maxDistance,
-      min: 0,
-      max: 100,
-      divisions: 100,
-      label: _maxDistance.toStringAsFixed(0),
-      onChanged: (value) {
-        setState(() {
-          _maxDistance = value;
-        });
-      },
-    );
-  }
-
-  //============================> rating Slider <===============================
-  Widget _ratingSlider() {
-    return Slider(
-      activeColor: AppColors.primaryColor,
-      inactiveColor: AppColors.greyColor,
-      value: _maxRating,
-      min: 0,
-      max: 5,
-      divisions: 5,
-      label: _maxRating.toStringAsFixed(0),
-      onChanged: (value) {
-        setState(() {
-          _maxRating = value;
-        });
-      },
-    );
-  }
-
-  //============================> Price Slider <===============================
-  Widget _priceSlider() {
-    return RangeSlider(
-      activeColor: AppColors.primaryColor,
-      inactiveColor: AppColors.greyColor,
-      values: RangeValues(_minPrice, _maxPrice),
-      min: 500,
-      max: 2500,
-      divisions: 100,
-      labels: RangeLabels(
-        _minPrice.toStringAsFixed(0),
-        _maxPrice.toStringAsFixed(0),
-      ),
-      onChanged: (values) {
-        setState(() {
-          _minPrice = values.start;
-          _maxPrice = values.end;
-        });
-      },
-    );
-  }
-
   //============================> Dropdown Field <===============================
-  _dropdownField(
-    List<String> options,
-    String? selectedValue,
-    Function(String?) onChanged,
-    String hint,
-  ) {
+  Widget _dropdownField(
+      List<String> options,
+      String? selectedValue,
+      Function(String?) onChanged,
+      String hint,
+      ) {
     return DropdownButtonFormField<String>(
       dropdownColor: AppColors.fillColor,
       icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
       ),
       items: options
-          .map(
-            (e) => DropdownMenuItem(
-              value: e,
-              child: Text(e, style: const TextStyle(color: Colors.white)),
-            ),
-          )
+          .map((e) => DropdownMenuItem(
+        value: e,
+        child: Text(e, style: const TextStyle(color: Colors.white)),
+      ))
           .toList(),
       onChanged: onChanged,
-      hint: Text(
-        hint,
-        style: TextStyle(
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w400,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  //============================> Range Labels <===============================
-  Widget _rangeLabels(
-    String label1,
-    double value1,
-    String label2,
-    double value2,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [_rangeTag(label1, value1), _rangeTag(label2, value2)],
-    );
-  }
-
-  Widget _rangeTag(String label, double value) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(fontSize: 12.sp)),
-        SizedBox(height: 4.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: AppColors.primaryColor, width: 1.w),
-          ),
-          child: Text(
-            value.toStringAsFixed(0),
-            style: TextStyle(fontSize: 14.sp, color: AppColors.primaryColor),
-          ),
-        ),
-      ],
+      value: selectedValue,
+      hint: Text(hint, style: TextStyle(fontSize: 16.sp, color: Colors.white)),
     );
   }
 }

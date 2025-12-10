@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/search_model.dart';
@@ -34,6 +35,7 @@ class BusinessSearchController extends GetxController {
     int? page,
     int? limit,
     double? radius,
+    double? minRating,
     String? cuisineType,
     String? priceRange,
     bool? hasParking,
@@ -57,9 +59,13 @@ class BusinessSearchController extends GetxController {
         'longitude': longitude.toString(),
       };
 
+      log('======> API Request: /businesses/search/nearby');
+      log('Query Params: $queryParams');
+
       if (page != null) queryParams['page'] = page.toString();
       if (limit != null) queryParams['limit'] = limit.toString();
       if (radius != null) queryParams['radius'] = radius.toString();
+      if (minRating != null) queryParams['minRating'] = minRating.toString();
       if (keyword != null && keyword.isNotEmpty) queryParams['search'] = keyword;
       if (cuisineType != null) queryParams['cuisineType'] = cuisineType;
       if (priceRange != null) queryParams['priceRange'] = priceRange;
@@ -82,6 +88,7 @@ class BusinessSearchController extends GetxController {
 
         if (searchResponse.success) {
           allBusinesses.value = searchResponse.data; // master copy
+          print('Filtered Businesses Count: ${allBusinesses.length}');
           _filterLocalBusinesses(searchKeyword.value); // filter if search already typed
         } else {
           errorMessage.value = searchResponse.message;
