@@ -94,9 +94,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: NetworkImage(
-                          data.photos.isNotEmpty
-                              ? data.photos.first.photoUrl
-                              : "https://via.placeholder.com/300x200.png",
+                          data.photos.isNotEmpty ? data.photos.first.photoUrl : "https://via.placeholder.com/300x200.png",
                         ),
                         fit: BoxFit.cover,
                       ),
@@ -200,10 +198,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 color: Colors.green, size: 20.w),
                             SizedBox(width: 4.w),
                             CustomText(
-                              text: data.businessHours!.isOpen? "Open" : "Closed",
-                              color: data.businessHours!.isOpen ? Colors.green : Colors.red,
+                              text: (data.businessHours?.isOpen ?? false) ? "Open" : "Closed",
+                              color: (data.businessHours?.isOpen ?? false) ? Colors.green : Colors.red,
                               fontWeight: FontWeight.bold,
                             ),
+
                           ],
                         ),
                         SizedBox(width: 16.w),
@@ -245,7 +244,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           _buildInfoRow(
                               icon: Icons.language,
                               label: "Website",
-                              value: data.contact!.website),
+                              value: data.contact!.website ?? ''),
                           Divider(color: Colors.grey),
                           _buildInfoRow(
                               icon: Icons.directions,
