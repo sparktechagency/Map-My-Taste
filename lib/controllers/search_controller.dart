@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/search_model.dart';
 
 import '../service/api_client.dart';
+import 'category_list_controller.dart';
 
 class BusinessSearchController extends GetxController {
   // =================== Reactive Variables ===================
@@ -13,6 +14,7 @@ class BusinessSearchController extends GetxController {
 
   Rx<LatLng?> currentPosition = Rx<LatLng?>(null);
   RxString searchKeyword = ''.obs;
+  RxList<Business> allBusinesses = <Business>[].obs; // master list
 
   // =================== API Call ===================
   Future<void> fetchNearbyBusinesses({
@@ -73,10 +75,12 @@ class BusinessSearchController extends GetxController {
         final searchResponse = SearchModel.fromJson(jsonData);
 
         if (searchResponse.success) {
-          businesses.value = searchResponse.data;
+          allBusinesses.value = searchResponse.data; // keep master copy
+          businesses.value = List.from(allBusinesses); // initially show all
         } else {
           errorMessage.value = searchResponse.message;
         }
+
       } else {
         errorMessage.value = 'Error ${response.statusCode}: ${response.statusText}';
       }
@@ -103,4 +107,21 @@ class BusinessSearchController extends GetxController {
     // Auto-fetch nearby businesses when location is set
     fetchNearbyBusinesses(latitude: position.latitude, longitude: position.longitude);
   }
+
+
+  void applyCategoryFilter() {
+    if (Get.isRegistered<CategoryController>() == false) return;
+
+    final categoryController = Get.find<CategoryController>();
+    if (categoryController.categoryBusinesses.isEmpty) return;
+
+    // Get IDs from category API
+    final filteredIds = categoryController.categoryBusinesses.map((e) => e.id).toList();
+
+    // Filter main list based on these IDs
+    final filteredList = allBusinesses.where((b) => filteredIds.contains(b.id)).toList();
+
+    businesses.value = filteredList;
+  }
+
 }

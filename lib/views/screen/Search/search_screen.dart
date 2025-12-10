@@ -11,7 +11,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
-import '../../../controllers/category_list_controller.dart';
 import '../../../controllers/search_controller.dart';
 import '../../../helpers/prefs_helpers.dart';
 import '../../../helpers/route.dart';
@@ -34,7 +33,6 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final BusinessSearchController searchController = Get.put(BusinessSearchController());
   TextEditingController searchTextController = TextEditingController();
-  final CategoryController categoryController = Get.put(CategoryController());
   GoogleMapController? _mapController;
   bool _isMapReady = false;
   RxList<String> selectedOptions = <String>[].obs;
@@ -45,11 +43,23 @@ class _SearchScreenState extends State<SearchScreen> {
   BitmapDescriptor? _restaurantIcon;
   RxString selectedOption = ''.obs;
 
+
   final List<Map<String, dynamic>> staticTabs = [
     {'icon': Icons.sort, 'label': 'Sort'},
   ];
 
   RxList<Map<String, dynamic>> tabs = <Map<String, dynamic>>[].obs;
+
+
+  final List<Map<String, dynamic>> staticCategories = [
+    {'icon': Icons.restaurant, 'label': 'Restaurant', 'type': 'restaurant'},
+    {'icon': Icons.hotel, 'label': 'Hotel', 'type': 'hotel'},
+    {'icon': Icons.church, 'label': 'Church', 'type': 'church'},
+    {'icon': Icons.local_cafe, 'label': 'Cafe', 'type': 'cafe'},
+    {'icon': Icons.bakery_dining, 'label': 'Bakery', 'type': 'bakery'},
+    {'icon': Icons.bar_chart, 'label': 'Bar', 'type': 'bar'},
+
+  ];
 
 
   final List<String> options = [
@@ -59,8 +69,6 @@ class _SearchScreenState extends State<SearchScreen> {
     '\$→\$\$\$'.tr,
     '\$\$\$→\$'.tr,
   ];
-
-
 
   String? getSortParam(String selected) {
     switch (selected) {
@@ -98,16 +106,10 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
 
-    ever(categoryController.categories, (_) {
-      final dynamicTabs = categoryController.categories.map((c) {
-        return {
-          'icon': c.icon, // String emoji from API, can be null
-          'label': c.displayName
-        };
-      }).toList();
-
-      tabs.value = [...staticTabs, ...dynamicTabs];
-    });
+    tabs.value = [
+      ...staticTabs,       // "Sort" tab
+      ...staticCategories, // Your fixed categories with icons
+    ];
   }
 
   // ==================== Map & Marker Functions ====================
@@ -456,13 +458,28 @@ class _SearchScreenState extends State<SearchScreen> {
                           scrollDirection: Axis.horizontal,
                           itemCount: tabs.length,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemBuilder: (context, index) {
-                            final tab = tabs[index];
-                            return CustomTab(
-                              label: tab['label'] as String,
-                              onTap: index == 0 ? _showBottomSheet : null,
-                            );
-                          },
+                            itemBuilder: (context, index) {
+                              final tab = tabs[index];
+                              return CustomTab(
+                                icon: tab['icon'] as IconData,
+                                label: tab['label'] as String,
+                                onTap: () async {
+                                  if (index == 0) {
+                                    _showBottomSheet();
+                                  } else {
+                                    final categoryType = staticCategories[index - 1]['type'] as String;
+
+                                    searchController.fetchNearbyBusinesses(
+                                      latitude: searchController.currentPosition.value?.latitude,
+                                      longitude: searchController.currentPosition.value?.longitude,
+                                      category: categoryType, // fixed category
+                                    );
+                                  }
+                                },
+
+                              );
+                            }
+
                         );
                       }),
                     ),

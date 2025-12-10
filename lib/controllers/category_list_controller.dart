@@ -2,13 +2,23 @@ import 'dart:developer';
 import 'package:get/get.dart';
 
 import '../models/category_list_model.dart';
+import '../models/category_query_model.dart';
 import '../service/api_client.dart';
 import '../service/api_constants.dart';
 
 
 class CategoryController extends GetxController {
-  RxBool isLoading = false.obs;
+  /// Loading for category list
+  RxBool isCategoryLoading = false.obs;
+
+  /// Loading for businesses inside selected category
+  RxBool isBusinessLoading = false.obs;
+
+  /// Category list
   RxList<CategoryModel> categories = <CategoryModel>[].obs;
+
+  /// Business list based on selected category
+  RxList<CategoryData> categoryBusinesses = <CategoryData>[].obs;
 
   @override
   void onInit() {
@@ -16,32 +26,75 @@ class CategoryController extends GetxController {
     fetchCategories();
   }
 
+  // ----------------------------
+  // FETCH CATEGORY LIST
+  // ----------------------------
   Future<void> fetchCategories() async {
     try {
-      isLoading.value = true;
-      final response = await ApiClient.getData(ApiConstants.getCategoryList);
+      isCategoryLoading.value = true;
 
-      log("====> response $response");
+      final response = await ApiClient.getData(ApiConstants.getCategoryList);
+      log("====> Category List API Response: $response");
 
       if (response.statusCode == 200) {
-        // Already decoded Map
         final jsonData = response.body;
 
-        try {
-          final categoryResponse = CategoryListModel.fromJson(jsonData);
-          categories.value = categoryResponse.data;
-          log("=====> Parsing Successful: ${categories.length} categories loaded");
-        } catch (e) {
-          log("=====> CRITICAL PARSING ERROR: $e");
-          throw Exception(e);
-        }
+        final categoryResponse = CategoryListModel.fromJson(jsonData);
+        categories.value = categoryResponse.data;
+
+        log("====> Loaded ${categories.length} categories");
       } else {
-        log("=====> API Error: ${response.statusText}");
+        log("====> Category API Error: ${response.statusText}");
       }
     } catch (e) {
-      log("=====> FINAL CATCH BLOCK: $e");
+      log("====> Category Fetch Error: $e");
     } finally {
-      isLoading.value = false;
+      isCategoryLoading.value = false;
+    }
+  }
+
+  // ----------------------------
+  // FETCH BUSINESSES BY CATEGORY
+  // ----------------------------
+  Future<void> fetchBusinessesByCategory({
+    required String category,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      isBusinessLoading.value = true;
+
+      /// Build dynamic path
+      final path = ApiConstants.queryCategory.replaceFirst(
+        ":category",
+        category,
+      );
+
+      /// API call with dynamic lat/lon
+      final response = await ApiClient.getData(
+        path,
+        queryParams: {
+          "latitude": latitude.toString(),
+          "longitude": longitude.toString(),
+        },
+      );
+
+      log("======>query Response $response");
+
+      if (response.statusCode == 200) {
+        final jsonData = response.body;
+
+        final parsed = CategoryQueryModel.fromJson(jsonData);
+        categoryBusinesses.value = parsed.data;
+
+        log("====> Loaded ${categoryBusinesses.length} businesses");
+      } else {
+        log("====> Category Query API Error: ${response.statusText}");
+      }
+    } catch (e) {
+      log("====> CATEGORY QUERY ERROR: $e");
+    } finally {
+      isBusinessLoading.value = false;
     }
   }
 }
