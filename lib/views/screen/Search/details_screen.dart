@@ -260,10 +260,36 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                     ),
 
+                    // ... (inside _DetailsScreenState.build)
+
                     SizedBox(height: 16.h),
 
                     CustomButton(
-                      onTap: () => Get.toNamed(AppRoutes.reviewsScreen),
+                      // ------------------------------------------------------------------
+                      // In _DetailsScreenState.build, inside CustomButton onTap:
+
+                      onTap: () async {
+                        var result = await Get.toNamed(
+                            AppRoutes.reviewsScreen,
+                            arguments: data.id
+                        );
+
+                        // Check the result returned from ReviewController
+                        if (result != null && result is Map && result["success"] == true) {
+
+                          // ==========================================================
+                          // >> FIX: Use PostFrameCallback to ensure Overlay is ready <<
+                          // ==========================================================
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            Get.rawSnackbar(
+                              message: result["message"] as String? ?? "Review submitted successfully!",
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 2),
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                          });
+                        }
+                      },
                       text: "Write A Review",
                     ),
                     SizedBox(height: 16.h),

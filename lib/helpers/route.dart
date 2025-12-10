@@ -11,8 +11,6 @@ import '../views/screen/Conversation/conversation_screen.dart';
 import '../views/screen/Explore/explore_screen.dart';
 import '../views/screen/Favorites/favorites_screen.dart';
 import '../views/screen/Home/home_screen.dart';
-import '../views/screen/Location/location_picker_screen.dart';
-import '../views/screen/Location/location_screen.dart';
 import '../views/screen/Notifications/notifications_screen.dart';
 import '../views/screen/Profile/edit_profile_screen.dart';
 import '../views/screen/Profile/profile_screen.dart';
@@ -71,7 +69,7 @@ class AppRoutes{
     GetPage(name:homeScreen, page: ()=> HomeScreen(),transition:Transition.noTransition),
     GetPage(name:searchScreen, page: ()=> SearchScreen(),transition:Transition.noTransition),
    GetPage(name:detailsScreen, page: ()=> DetailsScreen()),
-   GetPage(name:reviewsScreen, page: ()=>const ReviewsScreen()),
+   GetPage(name:reviewsScreen, page: ()=> ReviewsScreen()),
    GetPage(name:favoritesScreen, page: ()=> FavoritesScreen(),transition:Transition.noTransition),
     GetPage(name:exploreScreen, page: ()=>const ExploreScreen(),transition:Transition.noTransition),
     GetPage(name:profileScreen, page: ()=> ProfileScreen(),transition: Transition.noTransition),

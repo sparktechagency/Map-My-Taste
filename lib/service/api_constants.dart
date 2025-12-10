@@ -23,6 +23,10 @@ class ApiConstants {
   static const String getCategoryList = "/businesses/categories/all";
   static const String queryCategory = "/businesses/category/:category";
 
+  //=============================> Reviews <=============================
+  static const String postUserReview = "/reviews";
+
+
   static const String termsConditionEndPoint = "";
   static const String privacyPolicyEndPoint = "";
   static const String aboutUsEndPoint = "";
