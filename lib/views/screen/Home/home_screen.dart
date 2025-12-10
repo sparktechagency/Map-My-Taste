@@ -9,7 +9,9 @@ import 'package:map_my_taste/utils/app_images.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
 import 'package:map_my_taste/views/base/bottom_menu..dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
+import '../../../controllers/search_controller.dart';
 import '../../../helpers/prefs_helpers.dart';
+import '../../base/custom_text.dart';
 import 'InnerWidget/filter_bottom_sheet.dart';
 import 'InnerWidget/post_card.dart';
 
@@ -22,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController searchCTRL = TextEditingController();
+  final BusinessSearchController controller = Get.put(BusinessSearchController());
 
   @override
   void initState() {
@@ -29,6 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // Ask for permission only if location not saved
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleFirstTimeLocation();
+    });
+
+    searchCTRL.addListener(() {
+      final query = searchCTRL.text.trim();
+      controller.search(query); // local search in controller
     });
   }
 
@@ -38,9 +46,14 @@ class _HomeScreenState extends State<HomeScreen> {
     String? lat = await PrefsHelper.getString('latitude');
     String? lon = await PrefsHelper.getString('longitude');
     if (lat.isNotEmpty && lon.isNotEmpty) {
-      print("Location already saved: $lat, $lon. Skipping permission request.");
+      print("Location already saved: $lat, $lon.");
+      controller.fetchNearbyBusinesses(
+        latitude: double.tryParse(lat),
+        longitude: double.tryParse(lon),
+      );
       return;
     }
+
 
     bool granted = false;
 
@@ -90,10 +103,14 @@ class _HomeScreenState extends State<HomeScreen> {
         );
         await PrefsHelper.setString('latitude', position.latitude.toString());
         await PrefsHelper.setString('longitude', position.longitude.toString());
+        await PrefsHelper.setBool('isFirstTimeLocation', false);
         print("Saved Location: ${position.latitude}, ${position.longitude}");
 
-        // Step 4: Set first-time flag
-        await PrefsHelper.setBool('isFirstTimeLocation', false);
+        // ✅ Call fetchNearbyBusinesses
+        controller.fetchNearbyBusinesses(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
 
         granted = true; // exit the loop
       } catch (e) {
@@ -207,15 +224,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               //=======================================> Post Card Section <===================================
-              ListView.builder(
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return PostCard();
-                },
-              ),
+              // Post Cards
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.businesses.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20.h),
+                      child: CustomText(text: "No businesses found"),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: controller.businesses.length,
+                  itemBuilder: (context, index) {
+                    final business = controller.businesses[index];
+                    return PostCard(business: business); // type-safe
+                  },
+                );
+              }),
+
             ],
           ),
         ),

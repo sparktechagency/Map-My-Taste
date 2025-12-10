@@ -8,13 +8,23 @@ import 'category_list_controller.dart';
 
 class BusinessSearchController extends GetxController {
   // =================== Reactive Variables ===================
-  RxList<Business> businesses = <Business>[].obs;
+  RxList<Business> businesses = <Business>[].obs; // displayed list
   RxBool isLoading = false.obs;
   RxString errorMessage = ''.obs;
 
   Rx<LatLng?> currentPosition = Rx<LatLng?>(null);
   RxString searchKeyword = ''.obs;
   RxList<Business> allBusinesses = <Business>[].obs; // master list
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    // Listen to searchKeyword changes for local filtering
+    ever(searchKeyword, (String keyword) {
+      _filterLocalBusinesses(keyword);
+    });
+  }
 
   // =================== API Call ===================
   Future<void> fetchNearbyBusinesses({
@@ -32,8 +42,6 @@ class BusinessSearchController extends GetxController {
     String? category,
     bool? isVerified,
     String? sort,
-
-
   }) async {
     if (latitude == null || longitude == null) {
       errorMessage.value = 'Latitude and Longitude are required';
@@ -42,7 +50,6 @@ class BusinessSearchController extends GetxController {
 
     isLoading.value = true;
     errorMessage.value = '';
-
 
     try {
       Map<String, String> queryParams = {
@@ -61,9 +68,8 @@ class BusinessSearchController extends GetxController {
       if (openNow != null) queryParams['openNow'] = openNow.toString();
       if (category != null) queryParams['category'] = category;
       if (isVerified != null) queryParams['isVerified'] = isVerified.toString();
-
-      // ⭐ Add Sorting Parameter
       if (sort != null) queryParams['sort'] = sort;
+
       // =================== ApiClient Call ===================
       final response = await ApiClient.getData(
         '/businesses/search/nearby',
@@ -75,12 +81,11 @@ class BusinessSearchController extends GetxController {
         final searchResponse = SearchModel.fromJson(jsonData);
 
         if (searchResponse.success) {
-          allBusinesses.value = searchResponse.data; // keep master copy
-          businesses.value = List.from(allBusinesses); // initially show all
+          allBusinesses.value = searchResponse.data; // master copy
+          _filterLocalBusinesses(searchKeyword.value); // filter if search already typed
         } else {
           errorMessage.value = searchResponse.message;
         }
-
       } else {
         errorMessage.value = 'Error ${response.statusCode}: ${response.statusText}';
       }
@@ -91,15 +96,39 @@ class BusinessSearchController extends GetxController {
     }
   }
 
-  // =================== Search Action ===================
-  void search(String keyword) {
-    searchKeyword.value = keyword;
-    fetchNearbyBusinesses(
-      latitude: currentPosition.value?.latitude,
-      longitude: currentPosition.value?.longitude,
-      keyword: keyword,
-    );
+  // =================== Local Search Filter ===================
+  void _filterLocalBusinesses(String keyword) {
+    if (keyword.isEmpty) {
+      businesses.value = List.from(allBusinesses);
+    } else {
+      businesses.value = allBusinesses
+          .where((b) => b.name.toLowerCase().contains(keyword.toLowerCase()))
+          .toList();
+    }
   }
+
+  void search(String keyword, {bool localOnly = true}) {
+    searchKeyword.value = keyword;
+
+    if (localOnly) {
+      // Local filter
+      if (keyword.isEmpty) {
+        businesses.value = List.from(allBusinesses);
+      } else {
+        businesses.value = allBusinesses
+            .where((b) => b.name.toLowerCase().contains(keyword.toLowerCase()))
+            .toList();
+      }
+    } else {
+      // Optional: call API if needed
+      fetchNearbyBusinesses(
+        latitude: currentPosition.value?.latitude,
+        longitude: currentPosition.value?.longitude,
+        keyword: keyword,
+      );
+    }
+  }
+
 
   // =================== Set Current Position ===================
   void setCurrentPosition(LatLng position) {
@@ -108,20 +137,31 @@ class BusinessSearchController extends GetxController {
     fetchNearbyBusinesses(latitude: position.latitude, longitude: position.longitude);
   }
 
-
+  // =================== Filter by Category ===================
   void applyCategoryFilter() {
     if (Get.isRegistered<CategoryController>() == false) return;
 
     final categoryController = Get.find<CategoryController>();
     if (categoryController.categoryBusinesses.isEmpty) return;
 
-    // Get IDs from category API
     final filteredIds = categoryController.categoryBusinesses.map((e) => e.id).toList();
 
-    // Filter main list based on these IDs
     final filteredList = allBusinesses.where((b) => filteredIds.contains(b.id)).toList();
-
     businesses.value = filteredList;
+  }
+
+  // =================== Optional Sorting ===================
+  void sortByName() {
+    businesses.sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  void sortByDistance() {
+    businesses.sort((a, b) {
+      if (a.distance == null && b.distance == null) return 0;
+      if (a.distance == null) return 1; // a goes after b
+      if (b.distance == null) return -1; // b goes after a
+      return a.distance!.compareTo(b.distance!);
+    });
   }
 
 }
