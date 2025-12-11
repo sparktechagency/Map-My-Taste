@@ -20,6 +20,7 @@ import '../../../utils/app_strings.dart';
 import '../../base/bottom_menu..dart';
 import '../../base/custom_button.dart';
 import '../../base/custom_network_image.dart';
+import '../../base/custom_page_loading.dart';
 import '../../base/custom_text.dart';
 import 'InnerWidget/custom_tab.dart';
 
@@ -256,7 +257,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildBusinessList() {
     return Obx(() {
       if (searchController.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: CustomPageLoading());
       } else if (searchController.errorMessage.value.isNotEmpty) {
         return Center(child: Text(searchController.errorMessage.value));
       } else if (searchController.businesses.isEmpty) {

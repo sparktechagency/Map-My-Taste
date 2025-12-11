@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../controllers/business_details_controller.dart';
 import '../../../controllers/favourite_controller.dart';
+import '../../base/custom_page_loading.dart';
 
 class DetailsScreen extends StatefulWidget {
   const DetailsScreen({super.key});
@@ -58,7 +59,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         return const Scaffold(
           backgroundColor: Colors.black,
           body: Center(
-            child: CircularProgressIndicator(color: Colors.white),
+            child: CustomPageLoading(),
           ),
         );
       }

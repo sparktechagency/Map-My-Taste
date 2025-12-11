@@ -6,6 +6,7 @@ import 'package:map_my_taste/views/base/bottom_menu..dart';
 
 import '../../../controllers/favourite_controller.dart';
 import '../../../utils/app_colors.dart';
+import '../../base/custom_page_loading.dart';
 import '../../base/custom_text.dart';
 import 'InnerWidget/post_card.dart';
 
@@ -29,7 +30,7 @@ class FavoritesScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isFetching.value) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: CustomPageLoading());
         }
 
         if (controller.favourites.isEmpty) {

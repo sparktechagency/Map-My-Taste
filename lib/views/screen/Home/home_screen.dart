@@ -13,6 +13,7 @@ import 'package:map_my_taste/views/base/bottom_menu..dart';
 import 'package:map_my_taste/views/base/custom_text_field.dart';
 import '../../../controllers/search_controller.dart';
 import '../../../helpers/prefs_helpers.dart';
+import '../../base/custom_page_loading.dart';
 import '../../base/custom_text.dart';
 import 'InnerWidget/filter_bottom_sheet.dart';
 import 'InnerWidget/post_card.dart';
@@ -212,12 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
 
-                  // Inside _HomeScreenState.build, in the InkWell for the filter icon:
-
-                  // Inside _HomeScreenState.build, in the InkWell for the filter icon:
-
-                  // Inside _HomeScreenState.build, in the InkWell for the filter icon:
-
                   InkWell(
                     onTap: () async {
 
@@ -298,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Post Cards
               Obx(() {
                 if (controller.isLoading.value) {
-                  return Center(child: CircularProgressIndicator());
+                  return Center(child: CustomPageLoading());
                 }
 
                 if (controller.businesses.isEmpty) {
