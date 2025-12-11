@@ -7,6 +7,7 @@ import '../../../../controllers/favourite_controller.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_icons.dart';
 import '../../../../utils/app_strings.dart';
+import '../../../base/custom_image_gallery.dart';
 import '../../../base/custom_network_image.dart';
 import '../../../base/custom_text.dart';
 
@@ -184,11 +185,19 @@ class _PostCardState extends State<PostCard> {
                     itemCount: business.photos!.length,
                     separatorBuilder: (_, __) => SizedBox(width: 8.w),
                     itemBuilder: (context, i) {
-                      return CustomNetworkImage(
-                        imageUrl: business.photos![i].photoUrl ?? "",
-                        height: 88.h,
-                        width: 150.w,
-                        borderRadius: BorderRadius.circular(12.r),
+                      final url = business.photos?[i].photoUrl ?? '';
+                      return GestureDetector(
+                        onTap: () => CustomImageGallery.show(
+                          context,
+                          business.photos!.map((e) => e.photoUrl ?? '').toList(),
+                          initialIndex: i,
+                        ),
+                        child: CustomNetworkImage(
+                          imageUrl: url,
+                          height: 88.h,
+                          width: 150.w,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
                       );
                     },
                   ),
