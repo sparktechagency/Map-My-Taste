@@ -14,6 +14,9 @@ class FavouriteController extends GetxController {
   var addFavouriteResponse = AddFavouriteModel().obs;
   var favourites = <FavouriteDataList>[].obs;
 
+  var singleFavourite = Rxn<SingleFavouriteData>();
+
+
   /// ===============================================================
   /// ADD TO FAVOURITE
   /// ===============================================================
@@ -103,4 +106,30 @@ class FavouriteController extends GetxController {
       isLoading(false);
     }
   }
+
+
+
+  Future<void> getSingleFavourite(String favouriteId) async {
+    try {
+      isFetching(true);
+      errorMessage('');
+
+      final response = await ApiClient.getData(
+        "${ApiConstants.getFavouritesSingle}$favouriteId",
+      );
+
+      if (response.statusCode == 200) {
+        final model = GetSingleFavouriteModel.fromJson(response.body);
+        singleFavourite.value = model.data; // store in observable
+      } else {
+        errorMessage(response.statusText ?? "Unable to fetch favourite");
+      }
+    } catch (e) {
+      errorMessage(e.toString());
+    } finally {
+      isFetching(false);
+    }
+  }
+
+
 }

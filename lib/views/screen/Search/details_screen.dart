@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map_my_taste/helpers/route.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/utils/app_icons.dart';
@@ -26,8 +27,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
   late BusinessDetailsController controller;
   bool _isFavorite = false;
   double? distance;
-  final favouriteController = Get.put(FavouriteController());
 
+  GoogleMapController? _mapController;
+
+  final LatLng _defaultPosition = const LatLng(23.8103, 90.4125); // Dhaka fallback
+
+  final favouriteController = Get.put(FavouriteController());
 
   @override
   void initState() {
@@ -52,16 +57,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
         return const Scaffold(
           backgroundColor: Colors.black,
-          body: Center(
-            child: CustomPageLoading(),
-          ),
+          body: Center(child: CustomPageLoading()),
         );
       }
 
@@ -95,7 +97,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: NetworkImage(
-                          data.photos.isNotEmpty ? data.photos.first.photoUrl : "https://via.placeholder.com/300x200.png",
+                          data.photos.isNotEmpty
+                              ? data.photos.first.photoUrl
+                              : "https://via.placeholder.com/300x200.png",
                         ),
                         fit: BoxFit.cover,
                       ),
@@ -122,22 +126,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           return IconButton(
                             icon: favouriteController.isLoading.value
                                 ? SizedBox(
-                              width: 24.w,
-                              height: 24.w,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.primaryColor,
-                              ),
-                            )
+                                    width: 24.w,
+                                    height: 24.w,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primaryColor,
+                                    ),
+                                  )
                                 : Icon(
-                              _isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: AppColors.primaryColor,
-                              size: 28.w,
-                            ),
+                                    _isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: AppColors.primaryColor,
+                                    size: 28.w,
+                                  ),
 
                             onPressed: () {
                               // Call your toggle function with business ID
-                              _toggleFavorite(data.id ?? '');
+                              _toggleFavorite(data.id);
                             },
                           );
                         }),
@@ -174,8 +180,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 20,                    ),
+                    SizedBox(height: 20),
                     // Name
                     CustomText(
                       text: data.name,
@@ -193,13 +198,25 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           children: List.generate(5, (index) {
                             if (index < data.rating.floor()) {
                               // Full star
-                              return Icon(Icons.star, color: Colors.yellow[700], size: 20.w);
+                              return Icon(
+                                Icons.star,
+                                color: Colors.yellow[700],
+                                size: 20.w,
+                              );
                             } else if (index < data.rating) {
                               // Half star
-                              return Icon(Icons.star_half, color: Colors.yellow[700], size: 20.w);
+                              return Icon(
+                                Icons.star_half,
+                                color: Colors.yellow[700],
+                                size: 20.w,
+                              );
                             } else {
                               // Empty star
-                              return Icon(Icons.star_border, color: Colors.yellow[700], size: 20.w);
+                              return Icon(
+                                Icons.star_border,
+                                color: Colors.yellow[700],
+                                size: 20.w,
+                              );
                             }
                           }),
                         ),
@@ -207,37 +224,49 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         SizedBox(width: 8.w),
                         Text(
                           "(${data.totalReviews})",
-                          style:
-                          TextStyle(color: Colors.grey[400], fontSize: 16.sp),
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 16.sp,
+                          ),
                         ),
                         SizedBox(width: 24.w),
                         Row(
                           children: [
-                            Icon(Icons.access_time_outlined,
-                                color: Colors.green, size: 20.w),
+                            Icon(
+                              Icons.access_time_outlined,
+                              color: Colors.green,
+                              size: 20.w,
+                            ),
                             SizedBox(width: 4.w),
                             CustomText(
-                              text: (data.businessHours?.isOpen ?? false) ? "Open" : "Closed",
-                              color: (data.businessHours?.isOpen ?? false) ? Colors.green : Colors.red,
+                              text: (data.businessHours?.isOpen ?? false)
+                                  ? "Open"
+                                  : "Closed",
+                              color: (data.businessHours?.isOpen ?? false)
+                                  ? Colors.green
+                                  : Colors.red,
                               fontWeight: FontWeight.bold,
                             ),
-
                           ],
                         ),
                         SizedBox(width: 16.w),
-              Row(
-                children: [
-                  Icon(Icons.location_on_outlined, color: Colors.grey[400], size: 20.w),
-                  SizedBox(width: 4.w),
-                  CustomText(
-                    text: distance != null ? "${distance!.toStringAsFixed(1)} km" : "N/A",
-                    color: AppColors.greyColor,
-                    fontSize: 16.sp,
-                  ),
-                ],
-
-
-            ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              color: Colors.grey[400],
+                              size: 20.w,
+                            ),
+                            SizedBox(width: 4.w),
+                            CustomText(
+                              text: distance != null
+                                  ? "${distance!.toStringAsFixed(1)} km"
+                                  : "N/A",
+                              color: AppColors.greyColor,
+                              fontSize: 16.sp,
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     SizedBox(height: 16.h),
@@ -245,14 +274,71 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     Padding(
                       padding: EdgeInsets.all(10),
                       child: ExpandableText(
-                        text: data.description ?? '',
+                        text: data.description,
                         maxLines: 3,
                         style: TextStyle(color: Colors.white, fontSize: 16),
-
                       ),
                     ),
 
                     SizedBox(height: 24.h),
+
+
+                    // ==================== BUSINESS MAP ====================
+                    SizedBox(
+                      height: 220.h,
+                      child: GoogleMap(
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+
+                          final loc = data.location;
+                          if (loc != null && loc.coordinates.length == 2) {
+                            final lat = loc.coordinates[1];
+                            final lng = loc.coordinates[0];
+
+                            final businessPos = LatLng(lat, lng);
+
+                            // Move camera to exact business location
+                            _mapController!.animateCamera(
+                              CameraUpdate.newLatLngZoom(businessPos, 15),
+                            );
+                          }
+                        },
+
+                        initialCameraPosition: CameraPosition(
+                          target: data.location != null &&
+                              data.location!.coordinates.length == 2
+                              ? LatLng(
+                            data.location!.coordinates[1],
+                            data.location!.coordinates[0],
+                          )
+                              : _defaultPosition,
+                          zoom: 14,
+                        ),
+
+                        mapType: MapType.satellite,
+                        myLocationEnabled: false,
+                        myLocationButtonEnabled: false,
+                        zoomGesturesEnabled: true,
+
+                        markers: {
+                          if (data.location != null &&
+                              data.location!.coordinates.length == 2)
+                            Marker(
+                              markerId: MarkerId(data.id),
+                              position: LatLng(
+                                data.location!.coordinates[1],
+                                data.location!.coordinates[0],
+                              ),
+                              infoWindow: InfoWindow(
+                                title: data.name,
+                                snippet: data.category,
+                              ),
+                            )
+                        },
+                      ),
+                    ),
+
+
 
                     // Info Box
                     Container(
@@ -267,48 +353,48 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             icon: Icons.language,
                             label: "Website",
                             value: data.contact!.website ?? '',
-
                           ),
                           Divider(color: Colors.grey),
                           _buildInfoRow(
-                              icon: Icons.directions,
-                              label: "${data.location!.address!.formattedAddress}",
-                              trailingColor: Colors.grey[400],
-                              maxLine: 5), // only Directions row uses more lines
+                            icon: Icons.directions,
+                            label:
+                                "${data.location!.address!.formattedAddress}",
+                            trailingColor: Colors.grey[400],
+                            maxLine: 5,
+                          ), // only Directions row uses more lines
                           Divider(color: Colors.grey),
                           _buildInfoRow(
-                              icon: Icons.phone,
-                              label: "Call ${data.contact!.phone}"),
+                            icon: Icons.phone,
+                            label: "Call ${data.contact!.phone}",
+                          ),
                         ],
                       ),
                     ),
 
                     // ... (inside _DetailsScreenState.build)
-
                     SizedBox(height: 16.h),
 
                     CustomButton(
-
-
                       onTap: () async {
                         var result = await Get.toNamed(
-                            AppRoutes.reviewsScreen,
-                          arguments: {
-                            "id": data.id,
-                            "name": data.name,
-                          },
+                          AppRoutes.reviewsScreen,
+                          arguments: {"id": data.id, "name": data.name},
                         );
 
                         // Check the result returned from ReviewController
-                        if (result != null && result is Map && result["success"] == true) {
-
+                        if (result != null &&
+                            result is Map &&
+                            result["success"] == true) {
                           // ==========================================================
                           // >> FIX: Use PostFrameCallback to ensure Overlay is ready <<
                           // ==========================================================
-                          if (mounted) { // Add mounted check for extra safety, though PostFrameCallback implies it should be
+                          if (mounted) {
+                            // Add mounted check for extra safety, though PostFrameCallback implies it should be
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               Get.rawSnackbar(
-                                message: result["message"] as String? ?? "Review submitted successfully!",
+                                message:
+                                    result["message"] as String? ??
+                                    "Review submitted successfully!",
                                 backgroundColor: Colors.green,
                                 duration: const Duration(seconds: 2),
                                 snackPosition: SnackPosition.BOTTOM,
@@ -400,9 +486,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
-
-
-// Inside _DetailsScreenState in details_screen.dart
+  // Inside _DetailsScreenState in details_screen.dart
 
   void _toggleFavorite(String businessId) async {
     // Prevent multiple rapid taps
@@ -430,7 +514,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
       });
 
       Get.rawSnackbar(
-        message: favouriteController.addFavouriteResponse.value.message ?? "Added to favorites",
+        message:
+            favouriteController.addFavouriteResponse.value.message ??
+            "Added to favorites",
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
         snackPosition: SnackPosition.BOTTOM,
@@ -448,6 +534,4 @@ class _DetailsScreenState extends State<DetailsScreen> {
       );
     }
   }
-
-
 }
