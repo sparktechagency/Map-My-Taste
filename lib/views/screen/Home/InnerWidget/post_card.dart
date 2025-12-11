@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../utils/app_colors.dart';
 import 'package:get/get.dart';
 import '../../../../utils/app_strings.dart';
+import '../../../base/custom_expandable_text.dart';
 import '../../../base/custom_image_gallery.dart';
 import '../../../base/custom_network_image.dart';
 import '../../../base/custom_text.dart';
@@ -82,7 +83,7 @@ class _PostCardState extends State<PostCard> {
                       Row(
                         children: [
                           CustomText(
-                            text: business.category ?? '',
+                            text: business.category.capitalize ?? '',
                             fontSize: 16.sp,
                             color: AppColors.greyColor,
                           ),
@@ -130,29 +131,18 @@ class _PostCardState extends State<PostCard> {
           // Description
           Padding(
             padding: EdgeInsets.all(10.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  text: business.description.isNotEmpty
-                      ? business.description
-                      : "No description",
-                  color: Colors.white,
-                  fontSize: 14,
-                  maxLine: isDescriptionExpanded ? 150 : 2,
-                  textOverflow: TextOverflow.ellipsis,
-                ),
-                GestureDetector(
-                  onTap: _toggleDescription,
-                  child: CustomText(
-                    text: isDescriptionExpanded ? "Show Less" : "Show More",
-                    color: AppColors.primaryColor,
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ],
+            child: ExpandableText(
+              text: business.description.isNotEmpty
+                  ? business.description
+                  : "No description",
+              maxLines: 3,
+              style: TextStyle(color: Colors.white, fontSize: 14),
+              toggleStyle: TextStyle(color: AppColors.primaryColor, fontSize: 14.sp),
             ),
           ),
+
+
+
 
           if (business.photos != null && business.photos!.isNotEmpty)
             Padding(

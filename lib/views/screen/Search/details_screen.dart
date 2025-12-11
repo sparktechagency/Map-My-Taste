@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../controllers/business_details_controller.dart';
 import '../../../controllers/favourite_controller.dart';
+import '../../base/custom_expandable_text.dart';
 import '../../base/custom_page_loading.dart';
 
 class DetailsScreen extends StatefulWidget {
@@ -241,13 +242,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
                     SizedBox(height: 16.h),
 
-                    // Description
-                    CustomText(
-                      text: data.description,
-                      fontSize: 16.sp,
-                      textAlign: TextAlign.justify,
-                      maxLine: 50,
+                    Padding(
+                      padding: EdgeInsets.all(10),
+                      child: ExpandableText(
+                        text: data.description ?? '',
+                        maxLines: 3,
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+
+                      ),
                     ),
+
                     SizedBox(height: 24.h),
 
                     // Info Box
@@ -260,9 +264,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       child: Column(
                         children: [
                           _buildInfoRow(
-                              icon: Icons.language,
-                              label: "Website",
-                              value: data.contact!.website ?? ''),
+                            icon: Icons.language,
+                            label: "Website",
+                            value: data.contact!.website ?? '',
+
+                          ),
                           Divider(color: Colors.grey),
                           _buildInfoRow(
                               icon: Icons.directions,
@@ -325,13 +331,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
     });
   }
 
-  // ================= Build Info Row =================
   Widget _buildInfoRow({
     required IconData icon,
     required String label,
-    String? value, // this is the actual URL
+    String? value,
     Color? trailingColor,
-    int maxLine = 1, // default 1 line
+    int maxLine = 1,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -344,21 +349,49 @@ class _DetailsScreenState extends State<DetailsScreen> {
             child: GestureDetector(
               onTap: () async {
                 if (value != null && value.isNotEmpty) {
-                  final uri = Uri.parse(value);
+                  var url = value.startsWith('http') ? value : 'https://$value';
+                  final uri = Uri.parse(url);
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                   } else {
-                    print("Could not launch $value");
+                    // Show error if URL cannot be launched
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          "Cannot open website",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
                   }
+                } else {
+                  // Show error if URL is empty
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text(
+                        "Website not available",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }
               },
-              child: CustomText(
-                text: label, // show "Website" or actual text
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-                textAlign: TextAlign.start,
-                maxLine: maxLine,
-                textOverflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -366,6 +399,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
       ),
     );
   }
+
+
 
 // Inside _DetailsScreenState in details_screen.dart
 

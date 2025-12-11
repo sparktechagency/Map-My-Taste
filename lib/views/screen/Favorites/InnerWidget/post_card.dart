@@ -7,6 +7,7 @@ import '../../../../controllers/favourite_controller.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_icons.dart';
 import '../../../../utils/app_strings.dart';
+import '../../../base/custom_expandable_text.dart';
 import '../../../base/custom_image_gallery.dart';
 import '../../../base/custom_network_image.dart';
 import '../../../base/custom_text.dart';
@@ -100,7 +101,7 @@ class _PostCardState extends State<PostCard> {
                         Row(
                           children: [
                             CustomText(
-                              text: business?.category ?? '',
+                              text: business?.category?.capitalize ?? '',
                               fontSize: 16.sp,
                               color: AppColors.greyColor,
                             ),
@@ -151,28 +152,18 @@ class _PostCardState extends State<PostCard> {
             // =================== DESCRIPTION ========================
             Padding(
               padding: EdgeInsets.all(10.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    text: business?.description ?? "No description",
-                    color: Colors.white,
-                    fontSize: 14,
-                    maxLine: isDescriptionExpanded ? 150 : 2,
-                    textOverflow: TextOverflow.ellipsis,
-                  ),
-
-                  GestureDetector(
-                    onTap: _toggleDescription,
-                    child: CustomText(
-                      text: isDescriptionExpanded ? "Show Less" : "Show More",
-                      color: AppColors.primaryColor,
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                ],
+              child: ExpandableText(
+                text: business?.description ?? "No description",
+                maxLines: 3,
+                style: TextStyle(color: Colors.white, fontSize: 14),
+                toggleStyle: TextStyle(
+                  color: AppColors.primaryColor,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
+
 
             // =================== IMAGES ======================
             if (business?.photos != null && business!.photos!.isNotEmpty)
@@ -222,7 +213,7 @@ class _PostCardState extends State<PostCard> {
       },
       itemBuilder: (_) => [
         PopupMenuItem(value: 0, child: CustomText(text: "Remove Favorite")),
-        PopupMenuItem(value: 1, child: CustomText(text: "Block User")),
+
       ],
       color: AppColors.fillColor,
       shape: RoundedRectangleBorder(

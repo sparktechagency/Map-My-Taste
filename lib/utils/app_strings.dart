@@ -88,7 +88,7 @@ class AppStrings {
   static String addPhotos = 'Add Photos';
   static String noThanks = 'No, Thanks';
 //=============================> Favorites Screen <==============================
-  static String favorites = 'Favorites';
+  static String favorites = 'Favourites';
 //=============================> Explore Screen <===============================
   static String explore = 'Explore';
   static String museums = 'Museums';

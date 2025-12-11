@@ -336,7 +336,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               Row(
                                 children: [
                                   CustomText(
-                                    text: business.category,
+                                    text: business.category.capitalize ?? '',
                                     fontSize: 16.sp,
                                     color: AppColors.greyColor,
                                   ),
