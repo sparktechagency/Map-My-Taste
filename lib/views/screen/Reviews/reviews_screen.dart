@@ -4,60 +4,15 @@ import 'package:get/get.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 import 'package:map_my_taste/utils/app_strings.dart';
 import 'package:map_my_taste/views/base/custom_button.dart';
+import '../../../controllers/user_review_controller.dart';
 import '../../base/custom_text.dart';
 
-class ReviewsScreen extends StatefulWidget {
-  const ReviewsScreen({super.key});
+import 'dart:io';
 
-  @override
-  State<ReviewsScreen> createState() => _ReviewsScreenState();
-}
+class ReviewsScreen extends StatelessWidget {
+  final ReviewController controller = Get.put(ReviewController());
 
-class _ReviewsScreenState extends State<ReviewsScreen> {
-  final _formKey = GlobalKey<FormState>();
-  int _rating = 0;
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final List<TextEditingController> _likedControllers = List.generate(
-    3,
-    (_) => TextEditingController(),
-  );
-  final List<TextEditingController> _dislikedControllers = List.generate(
-    2,
-    (_) => TextEditingController(),
-  );
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    for (var controller in _likedControllers) {
-      controller.dispose();
-    }
-    for (var controller in _dislikedControllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  void _submitReview() {
-    if (_formKey.currentState?.validate() == true && _rating > 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Review submitted successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill required fields and select a rating.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+  ReviewsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,17 +22,15 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_outlined,
-            color: Colors.white,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: CustomText(
-          text: 'Motin Miar Pizza Ghur',
+          text: controller.businessName,
           fontSize: 20.sp,
           fontWeight: FontWeight.w700,
         ),
+
         centerTitle: true,
       ),
       body: SafeArea(
@@ -85,32 +38,31 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
-              key: _formKey,
+              key: controller.formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Rating Section
+                  // ⭐ RATING SECTION
                   Center(
-                    child: Row(
+                    child: Obx(() => Row(
                       mainAxisSize: MainAxisSize.min,
                       children: List.generate(5, (index) {
                         return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _rating = index + 1;
-                            });
-                          },
+                          onTap: () => controller.rating.value = index + 1,
                           child: Icon(
-                            index < _rating ? Icons.star : Icons.star_border,
-                            color: index < _rating
+                            index < controller.rating.value
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: index < controller.rating.value
                                 ? Colors.amber
                                 : Colors.grey[600],
                             size: 32.w,
                           ),
                         );
                       }),
-                    ),
+                    )),
                   ),
+
                   SizedBox(height: 16.h),
                   Center(
                     child: CustomText(
@@ -119,99 +71,170 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       fontSize: 16.sp,
                     ),
                   ),
+
                   SizedBox(height: 16.h),
-                  // Title Field
+
+                  // TITLE
                   TextFormField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Title*',
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      filled: true,
-                      fillColor: AppColors.fillColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        borderSide: const BorderSide(color: Colors.orange),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Title is required';
-                      }
-                      return null;
-                    },
+                    controller: controller.titleCtrl,
+                    decoration: inputDecoration('Title*'),
+                    validator: (v) => v!.isEmpty ? "Title is required" : null,
                     style: const TextStyle(color: Colors.white),
                   ),
+
                   SizedBox(height: 16.h),
-                  //==================================> Description Field <======================
+
+                  // DESCRIPTION
                   TextFormField(
-                    controller: _descriptionController,
+                    controller: controller.descCtrl,
                     maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: 'Description*',
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      filled: true,
-                      fillColor: AppColors.fillColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        borderSide: const BorderSide(color: Colors.orange),
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Description is required';
+                    decoration: inputDecoration('Description*'),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return "Description is required";
+                      }
+                      if (v.trim().length < 10) {
+                        return "Description must be at least 10 characters";
                       }
                       return null;
                     },
                     style: const TextStyle(color: Colors.white),
                   ),
-                  SizedBox(height: 24.h),
-                  //=============================> What You Liked Section <==============================
+
+
+                  SizedBox(height: 16.h),
+
+                  // ⭐ ADD PHOTO
                   Row(
                     children: [
                       CustomText(
-                        text: 'What You Liked',
+                        text: "Add Photo",
                         fontWeight: FontWeight.w700,
                         fontSize: 22.sp,
                         right: 4.w,
                       ),
-                      CustomText(text: '(up to 3, optional)', fontSize: 12.sp),
+                      CustomText(text: "(optional)", fontSize: 12.sp),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+
+                  // IMAGE PICKER BOX
+                  Obx(() {
+                    final photo = controller.selectedPhoto.value;
+                    return GestureDetector(
+                      onTap: photo == null ? controller.showImagePickerOptions : null,
+                      child: Container(
+                        width: double.infinity,
+                        height: 120.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.fillColor,
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(
+                            color: Colors.grey[700]!,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: photo == null
+                            ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.camera_alt_outlined,
+                                color: Colors.grey[600], size: 32.w),
+                            SizedBox(height: 8.h),
+                            CustomText(
+                              text: "Tap to add photo",
+                              color: Colors.grey.shade600,
+                              fontSize: 14.sp,
+                            ),
+                          ],
+                        )
+                            : Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16.r),
+                              child: Image.file(
+                                File(photo.path),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: controller.removePhoto,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close,
+                                      color: Colors.white, size: 20),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+
+                  SizedBox(height: 16.h),
+
+                  // WHAT YOU LIKED
+                  Row(
+                    children: [
+                      CustomText(
+                        text: "What You Liked",
+                        fontWeight: FontWeight.w700,
+                        fontSize: 22.sp,
+                        right: 4.w,
+                      ),
+                      CustomText(text: "(up to 3, optional)", fontSize: 12.sp),
                     ],
                   ),
                   SizedBox(height: 8.h),
                   ...List.generate(
                     3,
-                    (i) => _buildTextField(_likedControllers[i], '${i + 1}.'),
+                        (i) => buildTextField(controller.likedCtrls[i], '${i + 1}.'),
                   ),
+
                   SizedBox(height: 24.h),
-                  //=============================> What You Didn't Like Section <=============================
+
+                  // WHAT YOU DIDN'T LIKE
                   Row(
                     children: [
                       CustomText(
-                        text: 'What You Didn’t Like',
+                        text: "What You Didn’t Like",
                         fontWeight: FontWeight.w700,
                         fontSize: 22.sp,
                         right: 4.w,
                       ),
-                      CustomText(text: '(up to 2, optional)', fontSize: 12.sp),
+                      CustomText(text: "(up to 2, optional)", fontSize: 12.sp),
                     ],
                   ),
                   SizedBox(height: 8.h),
                   ...List.generate(
                     2,
-                    (i) =>
-                        _buildTextField(_dislikedControllers[i], '${i + 1}.'),
+                        (i) => buildTextField(controller.dislikedCtrls[i], '${i + 1}.'),
                   ),
+
                   SizedBox(height: 32.h),
-                  //======================================> Post Button <===============================
-                  CustomButton(onTap: _submitReview, text: AppStrings.post.tr),
+
+                  // ⭐ SUBMIT BUTTON
+                  Obx(() {
+                    return
+                      CustomButton(
+                        onTap: controller.isUploadingPhoto.value
+                            ? () {}
+                            : () => controller.submitReview(),
+                        loading: controller.isUploadingPhoto.value,
+                        text: controller.isUploadingPhoto.value ? "Uploading..." : AppStrings.post.tr,
+                      );
+
+                  })
                 ],
               ),
             ),
@@ -221,14 +244,32 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     );
   }
 
-  //======================================> Post Button <===============================
-  Widget _buildTextField(TextEditingController controller, String prefix) {
+  InputDecoration inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.grey),
+      filled: true,
+      fillColor: AppColors.fillColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.r),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.r),
+        borderSide: const BorderSide(color: Colors.orange),
+      ),
+    );
+  }
+
+
+
+  Widget buildTextField(TextEditingController controller, String prefix) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(
-          prefixText: '$prefix ',
+          prefixText: "$prefix ",
           prefixStyle: const TextStyle(color: Colors.grey),
           filled: true,
           fillColor: AppColors.fillColor,

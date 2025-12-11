@@ -72,6 +72,7 @@ class AppStrings {
   static String hotel = 'Hotel';
   static String thingsToDo = 'Things to do';
   static String open = 'Open';
+  static String close = 'Close';
   static String fastFood = 'Fast Food';
   static String hours = 'Hours';
   static String website = 'Website';
@@ -87,7 +88,7 @@ class AppStrings {
   static String addPhotos = 'Add Photos';
   static String noThanks = 'No, Thanks';
 //=============================> Favorites Screen <==============================
-  static String favorites = 'Favorites';
+  static String favorites = 'Favourites';
 //=============================> Explore Screen <===============================
   static String explore = 'Explore';
   static String museums = 'Museums';

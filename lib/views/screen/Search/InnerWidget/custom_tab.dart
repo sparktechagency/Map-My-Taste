@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:map_my_taste/utils/app_colors.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:map_my_taste/utils/app_colors.dart';
+
 class CustomTab extends StatelessWidget {
   final IconData icon;
   final String label;

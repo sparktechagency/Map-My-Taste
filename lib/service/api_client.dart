@@ -18,29 +18,42 @@ class ApiClient extends GetxService {
   static String bearerToken = "";
 
 //==========================================> Get Data <======================================
-  static Future<Response> getData(String uri,
-      {Map<String, dynamic>? query, Map<String, String>? headers}) async {
+  static Future<Response> getData(
+      String uri, {
+        Map<String, dynamic>? queryParams,
+        Map<String, String>? headers,
+      }) async {
     bearerToken = await PrefsHelper.getString(AppConstants.bearerToken);
 
     var mainHeaders = {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Bearer $bearerToken'
+      'Authorization': 'Bearer $bearerToken',
     };
+
     try {
-      debugPrint('====> API Call: $uri\nHeader: ${headers ?? mainHeaders}');
+      debugPrint('====> API Call: $uri\nHeader: ${headers ?? mainHeaders}\nQuery: $queryParams');
+
+      // Build full URL with optional query parameters
+      Uri fullUri = Uri.parse(ApiConstants.baseUrl + uri);
+      if (queryParams != null && queryParams.isNotEmpty) {
+        fullUri = fullUri.replace(queryParameters: queryParams.map((key, value) => MapEntry(key, value.toString())));
+      }
 
       http.Response response = await client
           .get(
-        Uri.parse(ApiConstants.baseUrl + uri),
+        fullUri,
         headers: headers ?? mainHeaders,
       )
           .timeout(const Duration(seconds: timeoutInSeconds));
+
       return handleResponse(response, uri);
     } catch (e) {
       debugPrint('------------${e.toString()}');
       return const Response(statusCode: 1, statusText: noInternetMessage);
     }
   }
+
+
 
 //==========================================> Post Data <======================================
   static Future<Response> postData(String uri, dynamic body,
