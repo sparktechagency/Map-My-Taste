@@ -251,3 +251,90 @@ class DeleteFavouriteResponse {
   }
 }
 
+////  GetSIngle Favourite \\\\\
+
+
+class GetSingleFavouriteModel {
+  final int? code;
+  final bool? success;
+  final String? message;
+  final SingleFavouriteData? data;
+
+  GetSingleFavouriteModel({
+    this.code,
+    this.success,
+    this.message,
+    this.data,
+  });
+
+  factory GetSingleFavouriteModel.fromJson(Map<String, dynamic> json) {
+    return GetSingleFavouriteModel(
+      code: json['code'] ?? 0,
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'] != null
+          ? SingleFavouriteData.fromJson(json['data'])
+          : null,
+    );
+  }
+}
+
+class SingleFavouriteData {
+  final String? id;
+  final FavouriteUser? user;
+  final String? business;
+  final String? businessType;
+  final String? googlePlaceId;
+  final bool? isActive;
+  final String? createdAt;
+  final String? updatedAt;
+
+  SingleFavouriteData({
+    this.id,
+    this.user,
+    this.business,
+    this.businessType,
+    this.googlePlaceId,
+    this.isActive,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory SingleFavouriteData.fromJson(Map<String, dynamic> json) {
+    return SingleFavouriteData(
+      id: json['_id'] ?? '',
+      user: json['user'] != null
+          ? FavouriteUser.fromJson(json['user'])
+          : null,
+      business: json['business'] ?? '',
+      businessType: json['businessType'] ?? '',
+      googlePlaceId: json['googlePlaceId'] ?? '',
+      isActive: json['isActive'] ?? false,
+      createdAt: json['createdAt'] ?? '',
+      updatedAt: json['updatedAt'] ?? '',
+    );
+  }
+}
+
+class FavouriteUser {
+  final String? id;
+  final String? fullName;
+  final String? displayName;
+  final bool? isAdmin;
+
+  FavouriteUser({
+    this.id,
+    this.fullName,
+    this.displayName,
+    this.isAdmin,
+  });
+
+  factory FavouriteUser.fromJson(Map<String, dynamic> json) {
+    return FavouriteUser(
+      id: json['_id'] ?? '',
+      fullName: json['fullName'] ?? '',
+      displayName: json['displayName'] ?? '',
+      isAdmin: json['isAdmin'] ?? false,
+    );
+  }
+}
