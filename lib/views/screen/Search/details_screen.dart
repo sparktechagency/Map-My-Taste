@@ -21,7 +21,7 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
-  final controller = Get.put(BusinessDetailsController());
+  late BusinessDetailsController controller;
   bool _isFavorite = false;
   double? distance;
   final favouriteController = Get.put(FavouriteController());
@@ -30,6 +30,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
   @override
   void initState() {
     super.initState();
+
+    controller = Get.put(BusinessDetailsController());
 
     // Safely read arguments
     final args = Get.arguments;
@@ -279,13 +281,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     SizedBox(height: 16.h),
 
                     CustomButton(
-                      // ------------------------------------------------------------------
-                      // In _DetailsScreenState.build, inside CustomButton onTap:
+
 
                       onTap: () async {
                         var result = await Get.toNamed(
                             AppRoutes.reviewsScreen,
-                            arguments: data.id
+                          arguments: {
+                            "id": data.id,
+                            "name": data.name,
+                          },
                         );
 
                         // Check the result returned from ReviewController

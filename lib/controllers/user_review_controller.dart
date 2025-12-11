@@ -3,18 +3,18 @@ import 'dart:io';
 
 import 'package:get/get.dart' hide MultipartFile, FormData;
 import 'package:image_picker/image_picker.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../service/api_client.dart';
 import '../service/api_constants.dart';
-
 
 class ReviewController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
   // ----------- Business ID -------------
   late final String businessId;
+  late final String businessName;
+
 
   // ----------- Review Inputs -------------
   RxInt rating = 0.obs;
@@ -32,44 +32,117 @@ class ReviewController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // get businessId from Get.arguments
-    businessId = Get.arguments ?? '';
+
+    final args = Get.arguments ?? {};
+    businessId = args["id"] ?? "";
+    businessName = args["name"] ?? "";
   }
 
-  // PICK IMAGE
-  Future<void> pickImage() async {
+
+  void showImagePickerOptions() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.black),
+              title: const Text(
+                "Take Photo",
+                style: TextStyle(color: Colors.black),
+              ),
+              onTap: () {
+                Get.back();
+                pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.black),
+              title: const Text(
+                "Choose from Gallery",
+                style: TextStyle(color: Colors.black),
+              ),
+              onTap: () {
+                Get.back();
+                pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+  Future<void> pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 1200,
       maxHeight: 1200,
       imageQuality: 85,
     );
+
     if (image != null) {
       selectedPhoto.value = image;
     }
   }
+
 
   // REMOVE IMAGE
   void removePhoto() {
     selectedPhoto.value = null;
   }
 
-// ... (imports and class definition remain the same)
 
   Future<void> submitReview() async {
-    if (!(formKey.currentState?.validate() ?? false) || rating.value == 0) {
-      // Simple validation error
+    // ⭐ Validation
 
-      // Removed: if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
-      // This line was causing the LateInitializationError crash when calling Get.back() later.
+    if (rating.value < 1) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please select at least 1 star.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
-      Get.snackbar(
-        "Error",
-        "Please fill required fields and select a rating",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+    if (!(formKey.currentState?.validate() ?? false)) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Please fill all required fields correctly.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // ⭐ Description length validation
+    if (descCtrl.text.trim().length < 10) {
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Description must be at least 10 characters.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
       );
       return;
     }
@@ -77,20 +150,29 @@ class ReviewController extends GetxController {
     isUploadingPhoto(true);
 
     try {
+      // Prepare body
       Map<String, String> body = {
         "business": businessId,
         "rating": rating.value.toString(),
         "title": titleCtrl.text.trim(),
         "description": descCtrl.text.trim(),
-        "liked": likedCtrls.map((c) => c.text.trim()).where((e) => e.isNotEmpty).join(','),
-        "disliked": dislikedCtrls.map((c) => c.text.trim()).where((e) => e.isNotEmpty).join(','),
+        "liked": likedCtrls
+            .map((c) => c.text.trim())
+            .where((e) => e.isNotEmpty)
+            .join(','),
+        "disliked": dislikedCtrls
+            .map((c) => c.text.trim())
+            .where((e) => e.isNotEmpty)
+            .join(','),
       };
 
+      // Prepare photo if selected
       List<MultipartBody> files = [];
       if (selectedPhoto.value != null) {
-        files.add(MultipartBody("photo", File(selectedPhoto.value!.path)));
+        files.add(MultipartBody("photos", File(selectedPhoto.value!.path)));
       }
 
+      // API call
       final response = await ApiClient.postMultipartData(
         ApiConstants.postUserReview,
         body,
@@ -99,33 +181,62 @@ class ReviewController extends GetxController {
 
       log("====>response review ${response.body}");
 
-      // ReviewController.submitReview - Inside if (response.statusCode == 201)
+      // ⭐ Success
       if (response.statusCode == 201) {
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Review submitted successfully!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
 
-        // The navigation is the only action on success.
-        Get.back(result: {"success": true, "message": "Review submitted successfully!"});
+        Get.back(result: {
+          "success": true,
+          "message": "Review submitted successfully!"
+        });
 
-      } else {
-        // Keep cleanup for error SnackBar display
-        if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
-
-        Get.rawSnackbar(
-          message: "Submission failed: ${response.statusText}",
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-          snackPosition: SnackPosition.BOTTOM,
+      }
+      // ⭐ Already reviewed
+      else if (response.statusCode == 409) {
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "You have already reviewed this business. You can update your existing review instead.",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
         );
       }
 
+      // ⭐ Other errors
+      else {
+        ScaffoldMessenger.of(Get.context!).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Submission failed: ${response.statusText}",
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
-      // Keep cleanup for error SnackBar display
-      if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
-
-      Get.rawSnackbar(
-        message: e.toString(),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-        snackPosition: SnackPosition.BOTTOM,
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
       );
     } finally {
       isUploadingPhoto(false);
@@ -145,3 +256,4 @@ class ReviewController extends GetxController {
     super.onClose();
   }
 }
+

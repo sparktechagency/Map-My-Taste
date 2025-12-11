@@ -26,10 +26,11 @@ class ReviewsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: CustomText(
-          text: 'Motin Miar Pizza Ghur',
+          text: controller.businessName,
           fontSize: 20.sp,
           fontWeight: FontWeight.w700,
         ),
+
         centerTitle: true,
       ),
       body: SafeArea(
@@ -88,9 +89,18 @@ class ReviewsScreen extends StatelessWidget {
                     controller: controller.descCtrl,
                     maxLines: 3,
                     decoration: inputDecoration('Description*'),
-                    validator: (v) => v!.isEmpty ? "Description is required" : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return "Description is required";
+                      }
+                      if (v.trim().length < 10) {
+                        return "Description must be at least 10 characters";
+                      }
+                      return null;
+                    },
                     style: const TextStyle(color: Colors.white),
                   ),
+
 
                   SizedBox(height: 16.h),
 
@@ -112,7 +122,7 @@ class ReviewsScreen extends StatelessWidget {
                   Obx(() {
                     final photo = controller.selectedPhoto.value;
                     return GestureDetector(
-                      onTap: photo == null ? controller.pickImage : null,
+                      onTap: photo == null ? controller.showImagePickerOptions : null,
                       child: Container(
                         width: double.infinity,
                         height: 120.h,
@@ -250,6 +260,8 @@ class ReviewsScreen extends StatelessWidget {
       ),
     );
   }
+
+
 
   Widget buildTextField(TextEditingController controller, String prefix) {
     return Padding(

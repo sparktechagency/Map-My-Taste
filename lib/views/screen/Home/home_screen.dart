@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   InkWell(
                     onTap: () async {
-                      // 1. Show the bottom sheet and await the result.
+
                       final result = await showModalBottomSheet<Map<String, dynamic>>(
                         isScrollControlled: true,
                         context: context,
@@ -229,15 +229,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       );
 
-                      // 2. CRITICAL FIX: Screen/Context Safety Check
+
                       if (!mounted) {
                         log('HomeScreen disposed during filter flow. Exiting onTap.');
                         return;
                       }
 
                       if (result != null) {
-                        // ⭐️ FIX: Read Latitude/Longitude directly from PrefsHelper ⭐️
-                        // This mirrors the logic in _handleFirstTimeLocation for persisted data.
+
                         String? latString = await PrefsHelper.getString('latitude');
                         String? lonString = await PrefsHelper.getString('longitude');
 
