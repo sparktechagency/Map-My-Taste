@@ -355,16 +355,20 @@ class _SearchScreenState extends State<SearchScreen> {
                                   SizedBox(width: 8.w),
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: AppColors.secondaryButtonColor,
+                                      color: isOpen ? Colors.green : Colors.amber, // ✅ dynamic color
                                       borderRadius: BorderRadius.circular(6.r),
                                     ),
                                     child: Padding(
                                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                                       child: CustomText(
                                         text: isOpen ? AppStrings.open.tr : AppStrings.close.tr,
+                                        color: Colors.white, // make text readable
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14.sp,
                                       ),
                                     ),
                                   ),
+
                                 ],
                               ),
                             ],

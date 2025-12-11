@@ -7,10 +7,8 @@ import '../../../../controllers/favourite_controller.dart';
 import '../../../../utils/app_colors.dart';
 import '../../../../utils/app_icons.dart';
 import '../../../../utils/app_strings.dart';
-import '../../../base/custom_button.dart';
 import '../../../base/custom_network_image.dart';
 import '../../../base/custom_text.dart';
-import '../../../base/custom_text_field.dart';
 
 class PostCard extends StatefulWidget {
   final FavouriteDataList fav; // <-- Correct model
@@ -118,17 +116,24 @@ class _PostCardState extends State<PostCard> {
 
                             Container(
                               decoration: BoxDecoration(
-                                color: AppColors.secondaryButtonColor,
+                                color: (business?.businessHours?.isOpen ?? false)
+                                    ? Colors.green // ✅ open
+                                    : Colors.amber, // ✅ closed
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 12.w,
-                                  vertical: 4.h,
+                                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                                child: CustomText(
+                                  text: (business?.businessHours?.isOpen ?? false)
+                                      ? AppStrings.open.tr
+                                      : AppStrings.close.tr,
+                                  color: Colors.white, // make text readable
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14.sp,
                                 ),
-                                child: CustomText(text: "Open"),
                               ),
                             ),
+
                           ],
                         ),
                       ],

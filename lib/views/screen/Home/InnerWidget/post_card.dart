@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../../../utils/app_colors.dart';
-
+import 'package:get/get.dart';
+import '../../../../utils/app_strings.dart';
 import '../../../base/custom_network_image.dart';
 import '../../../base/custom_text.dart';
 import 'package:map_my_taste/models/search_model.dart';
@@ -97,12 +97,21 @@ class _PostCardState extends State<PostCard> {
                           SizedBox(width: 8.w),
                           Container(
                             decoration: BoxDecoration(
-                              color: AppColors.secondaryButtonColor,
+                              color: (business.businessHours?.isOpen ?? false)
+                                  ? Colors.green // ✅ open
+                                  : Colors.amber, // ✅ closed
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                              child: CustomText(text: "Open"),
+                              child: CustomText(
+                                text: (business.businessHours?.isOpen ?? false)
+                                    ? AppStrings.open.tr
+                                    : AppStrings.close.tr,
+                                color: Colors.white, // make text readable
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14.sp,
+                              ),
                             ),
                           ),
                         ],

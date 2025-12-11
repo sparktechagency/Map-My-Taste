@@ -70,6 +70,10 @@ class Business {
   final double? rating;
   final int? totalReviews;
   final List<Photo>? photos;
+  final BusinessHours? businessHours;
+  final bool? isFromGoogle;
+  final bool? isVerified;
+  final String? businessStatus;
 
   Business({
     this.id,
@@ -83,6 +87,10 @@ class Business {
     this.rating,
     this.totalReviews,
     this.photos,
+    this.businessHours,
+    this.isFromGoogle,
+    this.isVerified,
+    this.businessStatus,
   });
 
   factory Business.fromJson(Map<String, dynamic> json) {
@@ -95,15 +103,35 @@ class Business {
       location: json['location'] != null
           ? Location.fromJson(json['location'])
           : null,
-      contact:
-      json['contact'] != null ? Contact.fromJson(json['contact']) : null,
+      contact: json['contact'] != null ? Contact.fromJson(json['contact']) : null,
       priceRange: json['priceRange'] ?? '',
       rating: (json['rating'] ?? 0).toDouble(),
       totalReviews: json['totalReviews'] ?? 0,
       photos: (json['photos'] as List<dynamic>?)
           ?.map((e) => Photo.fromJson(e))
-          .toList() ??
-          [],
+          .toList() ?? [],
+      businessHours: json['businessHours'] != null
+          ? BusinessHours.fromJson(json['businessHours'])
+          : null,
+      isFromGoogle: json['isFromGoogle'] ?? false,
+      isVerified: json['isVerified'] ?? false,
+      businessStatus: json['businessStatus'] ?? '',
+    );
+  }
+}
+
+class BusinessHours {
+  final bool? isOpen;
+  final List<String>? weekdayText;
+
+  BusinessHours({this.isOpen, this.weekdayText});
+
+  factory BusinessHours.fromJson(Map<String, dynamic> json) {
+    return BusinessHours(
+      isOpen: json['isOpen'] ?? false,
+      weekdayText: (json['weekdayText'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
     );
   }
 }

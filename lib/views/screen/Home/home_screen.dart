@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String? lat = await PrefsHelper.getString('latitude');
     String? lon = await PrefsHelper.getString('longitude');
     if (lat.isNotEmpty && lon.isNotEmpty) {
-      print("Location already saved: $lat, $lon.");
+      log("Location already saved: $lat, $lon.");
       controller.fetchNearbyBusinesses(
         latitude: double.tryParse(lat),
         longitude: double.tryParse(lon),
@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await PrefsHelper.setString('latitude', position.latitude.toString());
         await PrefsHelper.setString('longitude', position.longitude.toString());
         await PrefsHelper.setBool('isFirstTimeLocation', false);
-        print("Saved Location: ${position.latitude}, ${position.longitude}");
+        log("Saved Location: ${position.latitude}, ${position.longitude}");
 
         // ✅ Call fetchNearbyBusinesses
         controller.fetchNearbyBusinesses(
