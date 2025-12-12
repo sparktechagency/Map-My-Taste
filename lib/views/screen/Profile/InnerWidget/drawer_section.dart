@@ -78,39 +78,6 @@ class _DrawerSectionState extends State<DrawerSection> {
                 title: AppStrings.password.tr,
                 prefixIcon: SvgPicture.asset(AppIcons.lock),
               ),
-              //=====================================>  Share Profile  ListTile <=============================
-              CustomListTile(
-                onTap: () {},
-                title: AppStrings.shareProfile.tr,
-                prefixIcon: SvgPicture.asset(AppIcons.shareProfile),
-              ),
-              Divider(thickness: 0.5),
-              SizedBox(height: 24.h),
-              CustomText(
-                text: AppStrings.preferences.tr,
-                fontWeight: FontWeight.w700,
-                fontSize: 18.sp,
-                bottom: 12.h,
-              ),
-              //=====================================>  Notification  ListTile <=============================
-              CustomListTile(
-                onTap: () {},
-                title: AppStrings.notification.tr,
-                prefixIcon: SvgPicture.asset(AppIcons.notification),
-                suffixIcon: Switch(
-                  padding: EdgeInsets.zero,
-                  value: isSwitched,
-                  onChanged: (value) {
-                    setState(() {
-                      isSwitched = value;
-                    });
-                  },
-                  activeColor:  AppColors.primaryColor,
-                  inactiveThumbColor: AppColors.greyColor,
-                  inactiveTrackColor: AppColors.fillColor,
-
-                ),
-              ),
               Divider(thickness: 0.5),
               SizedBox(height: 24.h),
               //=====================================>  Help & Support  ListTile <=============================
