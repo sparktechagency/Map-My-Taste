@@ -9,16 +9,85 @@ import '../service/api_constants.dart';
 class FavouriteController extends GetxController {
   var isLoading = false.obs;
   var isFetching = false.obs;
+  var isPaginating = false.obs;
+
   var errorMessage = ''.obs;
 
   var addFavouriteResponse = AddFavouriteModel().obs;
   var favourites = <FavouriteDataList>[].obs;
-
   var singleFavourite = Rxn<SingleFavouriteData>();
 
+  /// Pagination fields
+  int page = 1;
+  final int limit = 10;
+  RxBool hasMore = true.obs;
 
   /// ===============================================================
-  /// ADD TO FAVOURITE
+  /// RESET PAGINATION (call before new fetch)
+  /// ===============================================================
+  void resetPagination() {
+    page = 1;
+    favourites.clear();
+    hasMore(true);
+  }
+
+  /// ===============================================================
+  /// GET FAVOURITES (Paginated)
+  /// ===============================================================
+  Future<void> getFavourites({bool isLoadMore = false}) async {
+    try {
+      if (isLoadMore) {
+        if (!hasMore.value || isPaginating.value) return;
+        isPaginating(true);
+      } else {
+        isFetching(true);
+        resetPagination();
+      }
+
+      errorMessage('');
+
+      final response = await ApiClient.getData(
+        "${ApiConstants.getFavorites}?page=$page&limit=$limit",
+      );
+
+      if (response.statusCode == 200) {
+        final model = GetFavouritesModel.fromJson(response.body);
+
+        final List<FavouriteDataList> newData = model.data ?? [];
+
+        if (isLoadMore) {
+          favourites.addAll(newData);
+        } else {
+          favourites.assignAll(newData);
+        }
+
+        // Check if more data exists
+        if (newData.length < limit) {
+          hasMore(false);
+        } else {
+          page++;
+        }
+
+      } else {
+        errorMessage(response.statusText ?? "Unable to fetch favourites");
+      }
+    } catch (e) {
+      errorMessage(e.toString());
+    } finally {
+      isFetching(false);
+      isPaginating(false);
+    }
+  }
+
+  /// ===============================================================
+  /// LOAD MORE FAVOURITES
+  /// ===============================================================
+  Future<void> loadMoreFavourites() async {
+    await getFavourites(isLoadMore: true);
+  }
+
+  /// ===============================================================
+  /// ADD FAVOURITE
   /// ===============================================================
   Future<void> addToFavourite(String businessId) async {
     try {
@@ -38,7 +107,7 @@ class FavouriteController extends GetxController {
         addFavouriteResponse.value =
             AddFavouriteModel.fromJson(response.body);
 
-        /// Reload favourite list after adding
+        resetPagination();
         await getFavourites();
       } else {
         errorMessage(response.statusText ?? "Something went wrong");
@@ -47,29 +116,6 @@ class FavouriteController extends GetxController {
       errorMessage(e.toString());
     } finally {
       isLoading(false);
-    }
-  }
-
-  /// ===============================================================
-  /// GET FAVOURITES LIST
-  /// ===============================================================
-  Future<void> getFavourites() async {
-    try {
-      isFetching(true);
-      errorMessage('');
-
-      final response = await ApiClient.getData(ApiConstants.getFavorites);
-
-      if (response.statusCode == 200) {
-        final model = GetFavouritesModel.fromJson(response.body);
-        favourites.assignAll(model.data ?? []);
-      } else {
-        errorMessage(response.statusText ?? "Unable to fetch favourites");
-      }
-    } catch (e) {
-      errorMessage(e.toString());
-    } finally {
-      isFetching(false);
     }
   }
 
@@ -86,13 +132,10 @@ class FavouriteController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        // Parse response
         final res = DeleteFavouriteResponse.fromJson(response.body);
 
         if (res.success == true) {
-          // Remove from local list immediately
           favourites.removeWhere((item) => item.id == favouriteId);
-
           Get.snackbar('Success', res.message ?? 'Removed successfully');
         } else {
           errorMessage(res.message ?? 'Failed to remove favourite');
@@ -107,8 +150,9 @@ class FavouriteController extends GetxController {
     }
   }
 
-
-
+  /// ===============================================================
+  /// SINGLE FAVOURITE
+  /// ===============================================================
   Future<void> getSingleFavourite(String favouriteId) async {
     try {
       isFetching(true);
@@ -120,7 +164,7 @@ class FavouriteController extends GetxController {
 
       if (response.statusCode == 200) {
         final model = GetSingleFavouriteModel.fromJson(response.body);
-        singleFavourite.value = model.data; // store in observable
+        singleFavourite.value = model.data;
       } else {
         errorMessage(response.statusText ?? "Unable to fetch favourite");
       }
@@ -130,6 +174,4 @@ class FavouriteController extends GetxController {
       isFetching(false);
     }
   }
-
-
 }

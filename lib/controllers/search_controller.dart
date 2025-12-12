@@ -11,7 +11,7 @@ class BusinessSearchController extends GetxController {
   // =================== Reactive Variables ===================
   RxList<Business> businesses = <Business>[].obs;
   RxBool isLoading = false.obs;
-  RxBool isPaginating = false.obs; // Flag for ongoing pagination
+  RxBool isPaginating = false.obs;
   RxString errorMessage = ''.obs;
 
   Rx<LatLng?> currentPosition = Rx<LatLng?>(null);
@@ -52,15 +52,15 @@ class BusinessSearchController extends GetxController {
   }) async {
     if (latitude == null || longitude == null) {
       errorMessage.value = 'Latitude and Longitude are required';
-      log('PAGINATION FAIL: Latitude or Longitude is null. Exiting fetchNearbyBusinesses.'); // 🛑 DIAGNOSTIC LOG
-      return; // <-- Silent exit point!
+      log('PAGINATION FAIL: Latitude or Longitude is null. Exiting fetchNearbyBusinesses.');
+      return;
     }
 
     if (!loadMore) {
       isLoading.value = true;
       currentPage.value = 1;
     }
-    // isPaginating flag setting is now controlled by loadMoreBusinesses()
+
 
     errorMessage.value = '';
 
@@ -127,7 +127,7 @@ class BusinessSearchController extends GetxController {
       if (!loadMore) {
         isLoading.value = false;
       }
-      // isPaginating is NOT cleared here for loadMore calls.
+
     }
   }
 
@@ -154,7 +154,7 @@ class BusinessSearchController extends GetxController {
       currentPage.value++;
 
       fetchNearbyBusinesses(
-        latitude: pos.latitude, // Use the checked, non-null location
+        latitude: pos.latitude,
         longitude: pos.longitude,
         keyword: searchKeyword.value,
         page: currentPage.value,

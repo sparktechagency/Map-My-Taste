@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String? lat = await PrefsHelper.getString('latitude');
     String? lon = await PrefsHelper.getString('longitude');
 
-    if (lat != null && lon != null && lat.isNotEmpty && lon.isNotEmpty) {
+    if (lat.isNotEmpty && lon.isNotEmpty) {
       final double? latitude = double.tryParse(lat);
       final double? longitude = double.tryParse(lon);
 

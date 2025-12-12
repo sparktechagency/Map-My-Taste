@@ -26,11 +26,15 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends State<DetailsScreen> {
   late BusinessDetailsController controller;
   bool _isFavorite = false;
+  bool _favoriteInitialized = false;
   double? distance;
 
   GoogleMapController? _mapController;
 
-  final LatLng _defaultPosition = const LatLng(23.8103, 90.4125); // Dhaka fallback
+  final LatLng _defaultPosition = const LatLng(
+    23.8103,
+    90.4125,
+  );
 
   final favouriteController = Get.put(FavouriteController());
 
@@ -68,6 +72,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
       }
 
       final data = controller.details.value?.data;
+
+      // Initialize local favorite state from backend only once
+      if (!_favoriteInitialized && data != null) {
+        _isFavorite = data.isFavorited;
+        _favoriteInitialized = true;
+      }
 
       log("=====>data  $data");
 
@@ -121,30 +131,23 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           onPressed: () => Navigator.pop(context),
                         ),
 
-                        // ⭐ FAVORITE BUTTON ⭐
                         Obx(() {
                           return IconButton(
                             icon: favouriteController.isLoading.value
                                 ? SizedBox(
-                                    width: 24.w,
-                                    height: 24.w,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.primaryColor,
-                                    ),
-                                  )
+                              width: 24.w,
+                              height: 24.w,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primaryColor,
+                              ),
+                            )
                                 : Icon(
-                                    _isFavorite
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: AppColors.primaryColor,
-                                    size: 28.w,
-                                  ),
-
-                            onPressed: () {
-                              // Call your toggle function with business ID
-                              _toggleFavorite(data.id);
-                            },
+                              _isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: AppColors.primaryColor,
+                              size: 28.w,
+                            ),
+                            onPressed: favouriteController.isLoading.value ? null : () => _toggleFavorite(data.id),
                           );
                         }),
                       ],
@@ -282,7 +285,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
                     SizedBox(height: 24.h),
 
-
                     // ==================== BUSINESS MAP ====================
                     SizedBox(
                       height: 220.h,
@@ -305,12 +307,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         },
 
                         initialCameraPosition: CameraPosition(
-                          target: data.location != null &&
-                              data.location!.coordinates.length == 2
+                          target:
+                              data.location != null &&
+                                  data.location!.coordinates.length == 2
                               ? LatLng(
-                            data.location!.coordinates[1],
-                            data.location!.coordinates[0],
-                          )
+                                  data.location!.coordinates[1],
+                                  data.location!.coordinates[0],
+                                )
                               : _defaultPosition,
                           zoom: 14,
                         ),
@@ -333,12 +336,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 title: data.name,
                                 snippet: data.category,
                               ),
-                            )
+                            ),
                         },
                       ),
                     ),
-
-
 
                     // Info Box
                     Container(
@@ -440,7 +441,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                   } else {
-                    // Show error if URL cannot be launched
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text(
@@ -486,52 +487,35 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
-  // Inside _DetailsScreenState in details_screen.dart
-
   void _toggleFavorite(String businessId) async {
-    // Prevent multiple rapid taps
     if (favouriteController.isLoading.value) return;
 
-    // 1. Await the API call to toggle favorite status
+    if (_isFavorite) return;
+
     await favouriteController.addToFavourite(businessId);
 
-    // ⭐️ CRITICAL FIX: Ensure the widget is still in the tree (mounted)
-    // before performing any UI updates (setState, Get.rawSnackbar).
-    if (!mounted) {
-      // If the widget is no longer in the widget tree, stop execution
-      // to prevent calling UI methods on a stale context.
-      return;
-    }
+    if (!mounted) return;
 
-    // 2. Process API Response
     if (favouriteController.addFavouriteResponse.value.success == true) {
-      // Success: update UI and show snackbar
-
-      // 💡 Note: If _isFavorite is an RxBool in the controller,
-      // you might not need setState here, but if it's local state, keep it.
-      setState(() {
-        _isFavorite = true;
-      });
+      setState(() => _isFavorite = true);
 
       Get.rawSnackbar(
-        message:
-            favouriteController.addFavouriteResponse.value.message ??
-            "Added to favorites",
+        message: "Added to favorites",
         backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
         snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
       );
     } else {
-      // Failure: show error message
-
       Get.rawSnackbar(
         message: favouriteController.errorMessage.value.isNotEmpty
             ? favouriteController.errorMessage.value
             : "Failed to add favorite",
         backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
         snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
       );
     }
   }
+
+
 }
