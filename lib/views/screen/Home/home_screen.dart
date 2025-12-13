@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map_my_taste/helpers/route.dart';
 import 'package:map_my_taste/utils/app_icons.dart';
 import 'package:map_my_taste/utils/app_images.dart';
@@ -28,23 +29,56 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController searchCTRL = TextEditingController();
   final BusinessSearchController controller = Get.put(BusinessSearchController());
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    // Ask for permission only if location not saved
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent - 200) {
+        controller.loadMoreBusinesses();
+      }
+    });
+
+    // Synchronous callback, call async function inside
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _handleFirstTimeLocation();
+      _initializeAndHandleLocation(); // no await here
     });
 
     searchCTRL.addListener(() {
       final query = searchCTRL.text.trim();
-      controller.search(query); // local search in controller
+      controller.search(query);
     });
   }
 
+// Async helper
+  Future<void> _initializeAndHandleLocation() async {
+    await _initializeCurrentPosition();
+    await _handleFirstTimeLocation();
+  }
+
+// =================== Async initialization from Prefs ===================
+  Future<void> _initializeCurrentPosition() async {
+    String? lat = await PrefsHelper.getString('latitude');
+    String? lon = await PrefsHelper.getString('longitude');
+
+    if (lat.isNotEmpty && lon.isNotEmpty) {
+      final double? latitude = double.tryParse(lat);
+      final double? longitude = double.tryParse(lon);
+
+      if (latitude != null && longitude != null) {
+        controller.currentPosition.value = LatLng(latitude, longitude);
+        log("Controller currentPosition initialized from Prefs: $latitude, $longitude");
+      }
+    }
+  }
+
+
+
   /// Handle location permission and service only if latitude/longitude not saved
-  void _handleFirstTimeLocation() async {
+  Future<void> _handleFirstTimeLocation() async {
     // Check if location already saved
     String? lat = await PrefsHelper.getString('latitude');
     String? lon = await PrefsHelper.getString('longitude');
@@ -196,103 +230,104 @@ class _HomeScreenState extends State<HomeScreen> {
       //=======================================> Body Section <===================================
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              //=======================================> Search And Filter Row <===================================
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: 328.w,
-                    child: CustomTextField(
-                      controller: searchCTRL,
-                      hintText: AppStrings.searchForRestaurants.tr,
-                      prefixIcon: SvgPicture.asset(AppIcons.search),
-                    ),
+        child: Column(
+          children: [
+            //=======================================> Search And Filter Row <===================================
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: 328.w,
+                  child: CustomTextField(
+                    controller: searchCTRL,
+                    hintText: AppStrings.searchForRestaurants.tr,
+                    prefixIcon: SvgPicture.asset(AppIcons.search),
                   ),
+                ),
 
 
-                  InkWell(
-                    onTap: () async {
+                InkWell(
+                  onTap: () async {
 
-                      final result = await showModalBottomSheet<Map<String, dynamic>>(
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (BuildContext context) {
-                          return FilterBottomSheet();
-                        },
-                      );
+                    final result = await showModalBottomSheet<Map<String, dynamic>>(
+                      isScrollControlled: true,
+                      context: context,
+                      builder: (BuildContext context) {
+                        return FilterBottomSheet();
+                      },
+                    );
 
 
-                      if (!mounted) {
-                        log('HomeScreen disposed during filter flow. Exiting onTap.');
+                    if (!mounted) {
+                      log('HomeScreen disposed during filter flow. Exiting onTap.');
+                      return;
+                    }
+
+                    if (result != null) {
+
+                      String? latString = await PrefsHelper.getString('latitude');
+                      String? lonString = await PrefsHelper.getString('longitude');
+
+                      final double? lat = double.tryParse(latString ?? '');
+                      final double? lon = double.tryParse(lonString ?? '');
+
+                      // ⭐️ DEBUG 1: Check the raw result and location ⭐️
+                      log('Filter sheet returned result: $result');
+                      log('Current Position from Prefs: lat=$lat, lon=$lon');
+
+                      // Check for missing location data
+                      if (lat == null || lon == null) {
+                        log('Location data missing or invalid in storage. Cannot filter by nearby location. Exiting.');
                         return;
                       }
 
-                      if (result != null) {
-
-                        String? latString = await PrefsHelper.getString('latitude');
-                        String? lonString = await PrefsHelper.getString('longitude');
-
-                        final double? lat = double.tryParse(latString ?? '');
-                        final double? lon = double.tryParse(lonString ?? '');
-
-                        // ⭐️ DEBUG 1: Check the raw result and location ⭐️
-                        log('Filter sheet returned result: $result');
-                        log('Current Position from Prefs: lat=$lat, lon=$lon');
-
-                        // Check for missing location data
-                        if (lat == null || lon == null) {
-                          log('Location data missing or invalid in storage. Cannot filter by nearby location. Exiting.');
+                      // ⭐️ EXTREME FIX: Dispatch the API call outside of the current frame ⭐️
+                      Future.microtask(() async {
+                        if (!mounted) {
+                          log('Microtask skipped: HomeScreen disposed while pending.');
                           return;
                         }
 
-                        // ⭐️ EXTREME FIX: Dispatch the API call outside of the current frame ⭐️
-                        Future.microtask(() async {
-                          if (!mounted) {
-                            log('Microtask skipped: HomeScreen disposed while pending.');
-                            return;
-                          }
+                        // Extract values with explicit type casting and null handling
+                        final String? category = result['category'] as String?;
+                        final double? minRating = result['minRating'] as double?;
+                        final bool? openNow = result['openNow'] as bool?;
+                        final bool? isVerified = result['isVerified'] as bool?;
 
-                          // Extract values with explicit type casting and null handling
-                          final String? category = result['category'] as String?;
-                          final double? minRating = result['minRating'] as double?;
-                          final bool? openNow = result['openNow'] as bool?;
-                          final bool? isVerified = result['isVerified'] as bool?;
+                        // ⭐️ DEBUG 2: Check final values sent to API ⭐️
+                        log('--- Dispatching fetchNearbyBusinesses with Filters ---');
+                        log('Category: $category, MinRating: $minRating, OpenNow: $openNow, Verified: $isVerified');
 
-                          // ⭐️ DEBUG 2: Check final values sent to API ⭐️
-                          log('--- Dispatching fetchNearbyBusinesses with Filters ---');
-                          log('Category: $category, MinRating: $minRating, OpenNow: $openNow, Verified: $isVerified');
+                        // 3. Call the API asynchronously
+                        await controller.fetchNearbyBusinesses(
+                          latitude: lat, // Now reliably parsed from storage
+                          longitude: lon, // Now reliably parsed from storage
+                          category: category,
+                          openNow: openNow,
+                          isVerified: isVerified,
+                          minRating: minRating,
+                        );
+                      });
 
-                          // 3. Call the API asynchronously
-                          await controller.fetchNearbyBusinesses(
-                            latitude: lat, // Now reliably parsed from storage
-                            longitude: lon, // Now reliably parsed from storage
-                            category: category,
-                            openNow: openNow,
-                            isVerified: isVerified,
-                            minRating: minRating,
-                          );
-                        });
-
-                        // 4. Immediately return from the onTap function.
-                        return;
-                      } else {
-                        log('Filter sheet dismissed without applying filters (result was null).');
-                      }
-                    },
-                    child: SvgPicture.asset(AppIcons.filter),
-                  )
+                      // 4. Immediately return from the onTap function.
+                      return;
+                    } else {
+                      log('Filter sheet dismissed without applying filters (result was null).');
+                    }
+                  },
+                  child: SvgPicture.asset(AppIcons.filter),
+                )
 
 
 
-          ],
-              ),
-              //=======================================> Post Card Section <===================================
-              // Post Cards
-              Obx(() {
-                if (controller.isLoading.value) {
+              ],
+            ),
+            //=======================================> Post Card Section <===================================
+            // Post Cards
+            // 🛑 FIX: Wrap Obx in Expanded to give the ListView a constrained height
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoading.value && controller.businesses.isEmpty) {
                   return Center(child: CustomPageLoading());
                 }
 
@@ -306,19 +341,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 return ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: controller.businesses.length,
+                  controller: scrollController,
+                  // NOTE: Adjusted padding for the list items
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  // Adjusted itemCount: items + loader (if hasMore)
+                  itemCount: controller.businesses.length + (controller.hasMore.value ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final business = controller.businesses[index];
-                    return PostCard(business: business); // type-safe
+                    // Removed the redundant index == 0 header logic.
+
+                    if (index < controller.businesses.length) {
+                      final business = controller.businesses[index];
+                      return PostCard(business: business);
+                    }
+
+                    // Bottom loader for pagination
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.h),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
                   },
                 );
               }),
+            ),
 
-            ],
-          ),
+
+          ],
         ),
       ),
     );

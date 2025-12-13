@@ -41,6 +41,7 @@ class BusinessDetails {
   final bool isFromGoogle;
   final bool isVerified;
   final String businessStatus;
+  final bool isFavorited;
 
   BusinessDetails({
     required this.id,
@@ -58,6 +59,7 @@ class BusinessDetails {
     required this.isFromGoogle,
     required this.isVerified,
     required this.businessStatus,
+    required this.isFavorited,
   });
 
   factory BusinessDetails.fromJson(Map<String, dynamic> json) {
@@ -82,6 +84,7 @@ class BusinessDetails {
       isFromGoogle: json["isFromGoogle"] ?? false,
       isVerified: json["isVerified"] ?? false,
       businessStatus: json["businessStatus"] ?? "",
+      isFavorited: json["isFavorited"] ?? false,
     );
   }
 }
