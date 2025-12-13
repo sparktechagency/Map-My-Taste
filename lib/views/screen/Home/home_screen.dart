@@ -203,10 +203,11 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.black,
+        centerTitle: false,
         title: Row(
           children: [
             Image.asset(AppImages.logo, width: 162.w, height: 37.h),
-            Spacer(),
+            /*Spacer(),
             InkWell(
               onTap: () {Get.toNamed(AppRoutes.notificationsScreen);},
               child: SvgPicture.asset(
@@ -223,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 24.w,
                 height: 24.h,
               ),
-            ),
+            ),*/
           ],
         ),
       ),
