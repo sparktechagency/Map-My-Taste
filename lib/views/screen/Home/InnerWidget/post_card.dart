@@ -56,30 +56,42 @@ class _PostCardState extends State<PostCard> {
                     children: [
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Flexible(
                             child: CustomText(
                               text: business.name ?? '',
                               fontSize: 20.sp,
                               maxLine: 2,
+                              textAlign: TextAlign.start,
                               textOverflow: TextOverflow.ellipsis,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          SizedBox(width: 8.w),
-                          Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.yellow, size: 20),
-                              SizedBox(width: 5),
-                              CustomText(
-                                text: business.rating?.toString() ?? "0",
-                                color: AppColors.greyColor,
-                                fontSize: 16.sp,
+                          //===========================> Open or close Container <=========================
+                          Container(
+                            decoration: BoxDecoration(
+                              color: (business.businessHours?.isOpen ?? false)
+                                  ? Colors.green
+                                  : Colors.amber,
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                              child: CustomText(
+                                text: (business.businessHours?.isOpen ?? false)
+                                    ? AppStrings.open.tr
+                                    : AppStrings.close.tr,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14.sp,
                               ),
-                            ],
+                            ),
                           ),
+
                         ],
                       ),
+                      SizedBox(height: 6.h),
                       Row(
                         children: [
                           CustomText(
@@ -91,31 +103,25 @@ class _PostCardState extends State<PostCard> {
                           Icon(Icons.location_on_outlined, color: Colors.grey, size: 20),
                           SizedBox(width: 5.w),
                           CustomText(
-                            text: business.distance?.toStringAsFixed(1) ?? "0.0", // convert double to String with 1 decimal
+                            text: business.distance?.toStringAsFixed(1) ?? "0.0",
                             color: AppColors.greyColor,
                             fontSize: 16.sp,
                           ),
 
                           SizedBox(width: 8.w),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: (business.businessHours?.isOpen ?? false)
-                                  ? Colors.green // ✅ open
-                                  : Colors.amber, // ✅ closed
-                              borderRadius: BorderRadius.circular(6.r),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                              child: CustomText(
-                                text: (business.businessHours?.isOpen ?? false)
-                                    ? AppStrings.open.tr
-                                    : AppStrings.close.tr,
-                                color: Colors.white, // make text readable
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14.sp,
+
+                          Row(
+                            children: [
+                              Icon(Icons.star, color: Colors.yellow, size: 20),
+                              SizedBox(width: 5),
+                              CustomText(
+                                text: business.rating?.toString() ?? "0",
+                                color: AppColors.greyColor,
+                                fontSize: 16.sp,
                               ),
-                            ),
+                            ],
                           ),
+
                         ],
                       ),
                     ],
