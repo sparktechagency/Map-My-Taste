@@ -18,6 +18,11 @@ class BusinessSearchController extends GetxController {
   RxString searchKeyword = ''.obs;
   RxList<Business> allBusinesses = <Business>[].obs;
 
+  RxnString selectedCategory = RxnString();
+  RxnDouble selectedMinRating = RxnDouble();
+  RxnBool selectedOpenNow = RxnBool();
+  RxnBool selectedIsVerified = RxnBool();
+
   RxInt currentPage = 1.obs;
   RxBool hasMore = true.obs;
   final int perPage = 10;
@@ -59,6 +64,11 @@ class BusinessSearchController extends GetxController {
     if (!loadMore) {
       isLoading.value = true;
       currentPage.value = 1;
+
+      selectedCategory.value = category;
+      selectedMinRating.value = minRating;
+      selectedOpenNow.value = openNow;
+      selectedIsVerified.value = isVerified;
     }
 
 
@@ -71,6 +81,18 @@ class BusinessSearchController extends GetxController {
         'page': (page ?? currentPage.value).toString(),
         'limit': (limit ?? perPage).toString(),
       };
+
+      final activeSearch = keyword ?? searchKeyword.value;
+      final activeCategory = category ?? selectedCategory.value;
+      final activeMinRating = minRating ?? selectedMinRating.value;
+      final activeOpenNow = openNow ?? selectedOpenNow.value;
+      final activeIsVerified = isVerified ?? selectedIsVerified.value;
+
+      if (activeSearch.isNotEmpty) queryParams['search'] = activeSearch;
+      if (activeCategory != null) queryParams['category'] = activeCategory;
+      if (activeMinRating != null) queryParams['minRating'] = activeMinRating.toString();
+      if (activeOpenNow != null) queryParams['openNow'] = activeOpenNow.toString();
+      if (activeIsVerified != null) queryParams['isVerified'] = activeIsVerified.toString();
 
       if (keyword != null && keyword.isNotEmpty) queryParams['search'] = keyword;
       if (radius != null) queryParams['radius'] = radius.toString();

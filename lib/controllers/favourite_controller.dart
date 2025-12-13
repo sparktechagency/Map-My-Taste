@@ -35,25 +35,29 @@ class FavouriteController extends GetxController {
   /// GET FAVOURITES (Paginated)
   /// ===============================================================
   Future<void> getFavourites({bool isLoadMore = false}) async {
+    // 1. Guard Clause: Don't fetch if already loading or no more data
+    if (isLoadMore) {
+      if (!hasMore.value || isPaginating.value) return;
+      isPaginating(true);
+    } else {
+      if (isFetching.value) return;
+      isFetching(true);
+      resetPagination();
+    }
+
     try {
-      if (isLoadMore) {
-        if (!hasMore.value || isPaginating.value) return;
-        isPaginating(true);
-      } else {
-        isFetching(true);
-        resetPagination();
-      }
-
       errorMessage('');
-
       final response = await ApiClient.getData(
         "${ApiConstants.getFavorites}?page=$page&limit=$limit",
       );
 
       if (response.statusCode == 200) {
         final model = GetFavouritesModel.fromJson(response.body);
-
         final List<FavouriteDataList> newData = model.data ?? [];
+
+        if (newData.isEmpty || newData.length < limit) {
+          hasMore(false);
+        }
 
         if (isLoadMore) {
           favourites.addAll(newData);
@@ -61,13 +65,10 @@ class FavouriteController extends GetxController {
           favourites.assignAll(newData);
         }
 
-        // Check if more data exists
-        if (newData.length < limit) {
-          hasMore(false);
-        } else {
+        // Only increment page on successful fetch of a full page
+        if (newData.length == limit) {
           page++;
         }
-
       } else {
         errorMessage(response.statusText ?? "Unable to fetch favourites");
       }
