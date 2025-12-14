@@ -15,6 +15,10 @@ class ProfileController extends GetxController {
   File? selectedImage;
   RxString imagesPath = ''.obs;
   String title = "Profile Screen";
+  RxString profileImageUrl = ''.obs;
+  RxString selectedGender = ''.obs;
+
+
 
   @override
   void onInit() {
@@ -43,6 +47,24 @@ class ProfileController extends GetxController {
       profileModel.value = ProfileModel.fromJson(
         response.body['data'],
       );
+
+      fullNameCTRL.text = profileModel.value.fullName ?? '';
+      phoneCTRL.text = profileModel.value.phoneNumber ?? '';
+      addressCTRL.text = profileModel.value.address?.street ?? '';
+      // addressCTRL.text = [
+      //   profileModel.value.address?.street,
+      //   profileModel.value.address?.city,
+      //   profileModel.value.address?.state,
+      //   profileModel.value.address?.zipCode,
+      //   profileModel.value.address?.country,
+      // ]
+      //     .where((e) => e != null && e.trim().isNotEmpty)
+      //     .join(', ');
+
+      selectedGender.value = profileModel.value.profile?.gender ?? '';
+      profileImageUrl.value =
+          profileModel.value.profile?.profilePicture?.url ?? '';
+
       profileLoading(false);
       update();
     } else {
@@ -51,6 +73,111 @@ class ProfileController extends GetxController {
       update();
     }
   }
+
+
+  Future<void> submitProfile(BuildContext context) async {
+    try {
+      debugPrint("===== Submit Profile Started =====");
+
+      // =======================> Image validation <=======================
+      if (selectedImage != null) {
+        final imageBytes = await selectedImage!.length();
+        final sizeInMb = imageBytes / (1024 * 1024);
+        debugPrint("Selected image size: ${sizeInMb.toStringAsFixed(2)} MB");
+
+        if (sizeInMb > 1) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image must be less than 1 MB'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          debugPrint("Image validation failed: > 1 MB");
+          return;
+        }
+      } else {
+        debugPrint("No image selected");
+      }
+
+      // =======================> Prepare body <============================
+      Map<String, String> body = {};
+      if (fullNameCTRL.text.trim().isNotEmpty) {
+        body['fullName'] = fullNameCTRL.text.trim();
+      }
+      if (phoneCTRL.text.trim().isNotEmpty) {
+        body['phoneNumber'] = phoneCTRL.text.trim();
+      }
+      if (addressCTRL.text.trim().isNotEmpty) {
+        body['address'] = addressCTRL.text.trim();
+      }
+      if (selectedGender.value.trim().isNotEmpty) {
+        body['gender'] = selectedGender.value.trim();
+      }
+
+      debugPrint("Request Body: $body");
+
+      // =======================> Multipart file <==========================
+      List<MultipartBody> files = [];
+      if (selectedImage != null) {
+        files.add(MultipartBody('profilePicture', selectedImage!));
+        debugPrint("Multipart file added: ${selectedImage!.path}");
+      }
+
+      // =======================> API call <===============================
+      profileLoading(true);
+      debugPrint("Sending API request...");
+
+      var response = await ApiClient.putMultipartData(
+        ApiConstants.getProfileDataEndPoint,
+        body,
+        multipartBody: files,
+      );
+
+      profileLoading(false);
+
+      debugPrint("API Response Status: ${response.statusCode}");
+      debugPrint("API Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Profile updated successfully',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        debugPrint("Profile updated successfully, refreshing profile data...");
+        await getProfileData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to update profile: ${response.statusText}',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        ApiChecker.checkApi(response);
+      }
+    } catch (e, stack) {
+      profileLoading(false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      debugPrint("Exception caught in submitProfile: $e");
+      debugPrint(stack.toString());
+    }
+  }
+
 
 
   //===============================> Edit Profile Screen <=============================

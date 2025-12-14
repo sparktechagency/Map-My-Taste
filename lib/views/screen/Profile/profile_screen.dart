@@ -79,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     //========================> Profile Image <=============================
                     CustomNetworkImage(
-                      imageUrl: _controller.profileModel.value.profilePicture ?? '',
+                      imageUrl: _controller.profileModel.value.profile?.profilePicture?.url ?? '',
                       height: 120.h,
                       width: 120.w,
                       borderRadius: BorderRadius.circular(24.r),
@@ -122,20 +122,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           //========================> Post Friends Column <=============================
                           Row(
                             mainAxisAlignment:
-                                MainAxisAlignment.spaceAround,
+                                MainAxisAlignment.start,
                             children: [
                               _commonPosts(
                                 '${_controller.profileModel.value.stats?.numberOfPosts ?? "0"}',
                                 AppStrings.posts.tr,
                               ),
-                              _commonPosts(
-                                '${_controller.profileModel.value.stats?.numberOfFriends ?? "0"}',
-                                AppStrings.friends.tr,
-                              ),
-                              _commonPosts(
-                                '${_controller.profileModel.value.stats?.numberOfFollowers ?? "0"}',
-                                AppStrings.followers.tr,
-                              ),
+                              // _commonPosts(
+                              //   '${_controller.profileModel.value.stats?.numberOfFriends ?? "0"}',
+                              //   AppStrings.friends.tr,
+                              // ),
+                              // _commonPosts(
+                              //   '${_controller.profileModel.value.stats?.numberOfFollowers ?? "0"}',
+                              //   AppStrings.followers.tr,
+                              // ),
                             ],
                           ),
                         ],

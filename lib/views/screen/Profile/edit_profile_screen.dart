@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,9 +21,17 @@ class EditProfileScreen extends StatefulWidget {
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-final ProfileController _controller = Get.put(ProfileController());
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+
+  final ProfileController _controller = Get.put(ProfileController());
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.getProfileData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,33 +77,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //==============================> Profile picture section <=======================
-                    Center(
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          CustomNetworkImage(
-                            imageUrl:
-                            'https://t4.ftcdn.net/jpg/02/24/86/95/360_F_224869519_aRaeLneqALfPNBzg0xxMZXghtvBXkfIA.jpg',
-                            height: 120.h,
-                            width: 120.w,
-                            borderRadius: BorderRadius.circular(24.r),
-                            border: Border.all(
-                              width: 2.w,
-                              color: AppColors.greyColor,
+                    Obx(() {
+                      return Center(
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // 🔹 Priority: picked image → API image → placeholder
+                            _controller.imagesPath.value.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(24.r),
+                                    child: Image.file(
+                                      File(_controller.imagesPath.value),
+                                      height: 120.h,
+                                      width: 120.w,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : _controller.profileImageUrl.value.isNotEmpty
+                                ? CustomNetworkImage(
+                                    imageUrl: _controller.profileImageUrl.value,
+                                    height: 120.h,
+                                    width: 120.w,
+                                    borderRadius: BorderRadius.circular(24.r),
+                                  )
+                                : Container(
+                                    height: 120.h,
+                                    width: 120.w,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.greyColor,
+                                      borderRadius: BorderRadius.circular(24.r),
+                                    ),
+                                    child: const Icon(Icons.person, size: 50),
+                                  ),
+
+                            Positioned(
+                              right: -10.w,
+                              bottom: -10.h,
+                              child: InkWell(
+                                onTap: _showImagePickerOption,
+                                child: SvgPicture.asset(AppIcons.edit),
+                              ),
                             ),
-                          ),
-                          Positioned(
-                            right: -10.w,
-                            bottom: -10.h,
-                            child: InkWell(
-                              onTap: _showImagePickerOption,
-                              child: SvgPicture.asset(AppIcons.edit),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                          ],
+                        ),
+                      );
+                    }),
 
                     SizedBox(height: 22.h),
 
@@ -130,11 +158,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                     SizedBox(height: 32.h),
 
-                    //==============================> Button <=======================
                     CustomButton(
-                      onTap: () {},
+                      onTap: () {
+                        _controller.submitProfile(context);
+                      },
                       text: AppStrings.save.tr,
                     ),
+
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -143,96 +173,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ],
         ),
       ),
-
     );
   }
 
+  Widget _genderRadioButton() {
+    return Obx(() {
+      return Row(
+        children: [
+          _genderItem('male', 'Male'),
+          _genderItem('female', 'Female'),
+          _genderItem('other', 'Other'),
+        ],
+      );
+    });
+  }
 
-  //=========================> Gender Radio Button <================
-  _genderRadioButton() {
+
+  Widget _genderItem(String value, String label) {
     return Row(
       children: [
-        InkWell(
-          // onTap:
-          //     () => setState(() {
-          //   _authController.selectedGender = 'male';
-          // }),
-          child: Row(
-            children: [
-              Radio<String>(
-                value: 'male',
-              //  groupValue: _authController.selectedGender,
-                onChanged: (value) {
-                  // setState(() {
-                  //   _authController.selectedGender = value;
-                  // });
-                },
-                fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
-                    return AppColors.primaryColor;
-                  }
-                  return AppColors.primaryColor;
-                }),
-              ),
-              CustomText(text: 'Male'.tr, fontSize: 14.sp),
-            ],
-          ),
+        Radio<String>(
+          value: value,
+          groupValue: _controller.selectedGender.value,
+          onChanged: (val) {
+            _controller.selectedGender.value = val!;
+          },
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            return AppColors.primaryColor;
+          }),
         ),
-        InkWell(
-          // onTap:
-          //     () => setState(() {
-          //   _authController.selectedGender = 'female';
-          // }),
-          child: Row(
-            children: [
-              Radio<String>(
-                value: 'female',
-              //  groupValue: _authController.selectedGender,
-                onChanged: (value) {
-                  // setState(() {
-                  //   _authController.selectedGender = value;
-                  // });
-                },
-                fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
-                    return AppColors.primaryColor;
-                  }
-                  return AppColors.primaryColor;
-                }),
-              ),
-              CustomText(text: 'Female'.tr, fontSize: 14.sp),
-            ],
-          ),
-        ),
-        InkWell(
-          // onTap:
-          //     () => setState(() {
-          //   _authController.selectedGender = 'other';
-          // }),
-          child: Row(
-            children: [
-              Radio<String>(
-                value: 'other',
-              //  groupValue: _authController.selectedGender,
-                onChanged: (value) {
-                  // setState(() {
-                  //   _authController.selectedGender = value;
-                  // });
-                },
-                fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
-                    return AppColors.primaryColor;
-                  }
-                  return AppColors.primaryColor;
-                }),
-              ),
-              CustomText(text: 'Other'.tr, fontSize: 14.sp),
-            ],
-          ),
-        ),
+        CustomText(text: label.tr, fontSize: 14.sp),
       ],
     );
   }
+
 
   //====================================> Pick Image Gallery and Camera <====================
   void _showImagePickerOption() {
