@@ -52,73 +52,89 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 32.h),
+
             Container(
               width: double.infinity,
-              height: MediaQuery.of(context).size.height,
               decoration: BoxDecoration(
-                color: Color(0xFF1E1E1E),
+                color: const Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Padding(
                 padding: EdgeInsets.all(20.w),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     //==============================> Profile picture section <=======================
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        CustomNetworkImage(
-                          imageUrl:
-                              'https://t4.ftcdn.net/jpg/02/24/86/95/360_F_224869519_aRaeLneqALfPNBzg0xxMZXghtvBXkfIA.jpg',
-                          height: 120.h,
-                          width: 120.w,
-                          borderRadius: BorderRadius.circular(24.r),
-                          border: Border.all(
-                            width: 2.w,
-                            color: AppColors.greyColor,
+                    Center(
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          CustomNetworkImage(
+                            imageUrl:
+                            'https://t4.ftcdn.net/jpg/02/24/86/95/360_F_224869519_aRaeLneqALfPNBzg0xxMZXghtvBXkfIA.jpg',
+                            height: 120.h,
+                            width: 120.w,
+                            borderRadius: BorderRadius.circular(24.r),
+                            border: Border.all(
+                              width: 2.w,
+                              color: AppColors.greyColor,
+                            ),
                           ),
-                        ),
-                        //==============================> Edit Profile Button <=======================
-                        Positioned(
-                          right: -10.w,
-                          bottom: -10.h,
-                          child: InkWell(
-                            onTap: () {
-                              _showImagePickerOption();
-                            },
-                            child: SvgPicture.asset(AppIcons.edit),
+                          Positioned(
+                            right: -10.w,
+                            bottom: -10.h,
+                            child: InkWell(
+                              onTap: _showImagePickerOption,
+                              child: SvgPicture.asset(AppIcons.edit),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+
                     SizedBox(height: 22.h),
-                    //==============================> Name Controller  <=======================
+
                     CustomTextField(
                       controller: _controller.fullNameCTRL,
                       labelText: AppStrings.fullName.tr,
                     ),
                     SizedBox(height: 16.h),
-                    //==============================> Phone Number Controller  <=======================
+
                     CustomTextField(
                       controller: _controller.phoneCTRL,
                       labelText: AppStrings.phoneNumber.tr,
                     ),
                     SizedBox(height: 16.h),
-                    //==============================> Address Controller  <=======================
+
                     CustomTextField(
                       controller: _controller.addressCTRL,
                       labelText: AppStrings.address.tr,
                     ),
                     SizedBox(height: 16.h),
-                    //==============================> Gender Controller  <=======================
-                    CustomTextField(
-                      controller: _controller.genderCTRL,
-                      labelText: AppStrings.gender.tr,
+
+                    //==============================> Gender <=======================
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CustomText(
+                          text: AppStrings.gender.tr,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        _genderRadioButton(),
+                      ],
                     ),
-                    SizedBox(height: 245.h),
-                    CustomButton(onTap: () {}, text: AppStrings.save.tr),
+
+                    SizedBox(height: 32.h),
+
+                    //==============================> Button <=======================
+                    CustomButton(
+                      onTap: () {},
+                      text: AppStrings.save.tr,
+                    ),
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -127,6 +143,94 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ],
         ),
       ),
+
+    );
+  }
+
+
+  //=========================> Gender Radio Button <================
+  _genderRadioButton() {
+    return Row(
+      children: [
+        InkWell(
+          // onTap:
+          //     () => setState(() {
+          //   _authController.selectedGender = 'male';
+          // }),
+          child: Row(
+            children: [
+              Radio<String>(
+                value: 'male',
+              //  groupValue: _authController.selectedGender,
+                onChanged: (value) {
+                  // setState(() {
+                  //   _authController.selectedGender = value;
+                  // });
+                },
+                fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return AppColors.primaryColor;
+                  }
+                  return AppColors.primaryColor;
+                }),
+              ),
+              CustomText(text: 'Male'.tr, fontSize: 14.sp),
+            ],
+          ),
+        ),
+        InkWell(
+          // onTap:
+          //     () => setState(() {
+          //   _authController.selectedGender = 'female';
+          // }),
+          child: Row(
+            children: [
+              Radio<String>(
+                value: 'female',
+              //  groupValue: _authController.selectedGender,
+                onChanged: (value) {
+                  // setState(() {
+                  //   _authController.selectedGender = value;
+                  // });
+                },
+                fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return AppColors.primaryColor;
+                  }
+                  return AppColors.primaryColor;
+                }),
+              ),
+              CustomText(text: 'Female'.tr, fontSize: 14.sp),
+            ],
+          ),
+        ),
+        InkWell(
+          // onTap:
+          //     () => setState(() {
+          //   _authController.selectedGender = 'other';
+          // }),
+          child: Row(
+            children: [
+              Radio<String>(
+                value: 'other',
+              //  groupValue: _authController.selectedGender,
+                onChanged: (value) {
+                  // setState(() {
+                  //   _authController.selectedGender = value;
+                  // });
+                },
+                fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return AppColors.primaryColor;
+                  }
+                  return AppColors.primaryColor;
+                }),
+              ),
+              CustomText(text: 'Other'.tr, fontSize: 14.sp),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
